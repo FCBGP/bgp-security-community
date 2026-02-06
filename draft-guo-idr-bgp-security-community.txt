@@ -2,14 +2,16 @@
 
 
 
-WG Working Group                                              Y. N. Here
-Internet-Draft                                    Your Organization Here
-Intended status: Informational                           6 February 2026
-Expires: 10 August 2026
+idr                                                               Y. Guo
+Internet-Draft                                   Zhongguancun Laboratory
+Intended status: Standards Track                                   K. Xu
+Expires: 10 August 2026                                          X. Wang
+                                                     Tsinghua University
+                                                         6 February 2026
 
 
-                           TODO - Your title
-                  draft-todo-yourname-protocol-latest
+       Using BGP Community for Inter-AS Security Policy Signaling
+              draft-guo-idr-bgp-security-community-latest
 
 Abstract
 
@@ -21,8 +23,8 @@ About This Document
 
    The latest revision of this draft can be found at
    https://example.com/LATEST.  Status information for this document may
-   be found at https://datatracker.ietf.org/doc/draft-todo-yourname-
-   protocol/.
+   be found at https://datatracker.ietf.org/doc/draft-guo-idr-bgp-
+   security-community/.
 
    Discussion of this document takes place on the WG Working Group
    mailing list (mailto:WG@example.com), which is archived at
@@ -70,7 +72,7 @@ Table of Contents
    4.  IANA Considerations
    5.  Normative References
    Acknowledgments
-   Author's Address
+   Authors' Addresses
 
 1.  Introduction
 
@@ -107,8 +109,24 @@ Acknowledgments
 
    TODO acknowledge.
 
-Author's Address
+Authors' Addresses
 
-   Your Name Here
-   Your Organization Here
-   Email: your.email@example.com
+   Yangfei Guo
+   Zhongguancun Laboratory
+   Beijing
+   China
+   Email: guoyangfei@zgclab.edu.cn
+
+
+   Ke Xu
+   Tsinghua University
+   Beijing
+   China
+   Email: xuke@tsinghua.edu.cn
+
+
+   Xiaoliang Wang
+   Tsinghua University
+   Beijing
+   China
+   Email: wangxiaoliang0623@foxmail.com
