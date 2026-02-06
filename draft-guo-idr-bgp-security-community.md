@@ -9,18 +9,18 @@ number:
 date:
 consensus: true
 v: 3
-area: Routing Security
-workgroup: idr
+area: "Routing"
+workgroup: "Inter-Domain Routing"
 keyword:
  - BGP Community
  - Routing Security
 venue:
-  group: WG
-  type: Working Group
-  mail: WG@example.com
-  arch: https://example.com/WG
-  github: USER/REPO
-  latest: https://example.com/LATEST
+  group: "Inter-Domain Routing"
+  type: "Working Group"
+  mail: "idr@ietf.org"
+  arch: "https://mailarchive.ietf.org/arch/browse/idr/"
+  github: "FCBGP/bgp-security-community"
+  latest: "https://FCBGP.github.io/bgp-security-community/draft-guo-idr-bgp-security-community.html"
 
 author:
   -
