@@ -1454,10 +1454,14 @@ appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶<
       </h2>
 <p id="section-6-1">This document defines new BGP Community values for signaling security policy intent. IANA is requested to create a sub-registry "BGP Security Policy Action IDs" under the "BGP Large Communities" registry.<a href="#section-6-1" class="pilcrow">¶</a></p>
 <p id="section-6-2">The format of these communities are <code>Global-Administrator:Action-ID:Parameter</code>. The Global Administrator <span class="bcp14">MUST</span> be the ASN of the Origin AS.<a href="#section-6-2" class="pilcrow">¶</a></p>
-<p id="section-6-3">Action ID |   Name      | Policy Intent Description
+<div class="alignLeft art-text artwork" id="section-6-3">
+<pre>
+   Action ID |   Name      | Policy Intent Description
   ----------------------------------------------------------------------------------
     1000     |  ROA-Strict | Reject if RPKI state is Invalid OR NotFound.
-    1001     | ASPA-Strict | Reject if ASPA validation state is Invalid or Unknown.<a href="#section-6-3" class="pilcrow">¶</a></p>
+    1001     | ASPA-Strict | Reject if ASPA validation state is Invalid or Unknown.
+</pre><a href="#section-6-3" class="pilcrow">¶</a>
+</div>
 <div id="standard-community-mapping-legacy">
 <section id="section-6.1">
         <h3 id="name-standard-community-mapping-">

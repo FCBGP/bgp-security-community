@@ -357,10 +357,10 @@ Table of Contents
    ID:Parameter.  The Global Administrator MUST be the ASN of the Origin
    AS.
 
-   Action ID | Name | Policy Intent Description ------------------------
-   ---------------------------------------------------------- 1000 |
-   ROA-Strict | Reject if RPKI state is Invalid OR NotFound.  1001 |
-   ASPA-Strict | Reject if ASPA validation state is Invalid or Unknown.
+   Action ID |   Name      | Policy Intent Description
+  ----------------------------------------------------------------------------------
+    1000     |  ROA-Strict | Reject if RPKI state is Invalid OR NotFound.
+    1001     | ASPA-Strict | Reject if ASPA validation state is Invalid or Unknown.
 
 6.1.  Standard Community Mapping (Legacy)
 
