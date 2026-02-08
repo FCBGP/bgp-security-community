@@ -48,9 +48,8 @@ informative:
   ASPA-Profile: I-D.ietf-sidrops-aspa-profile
   ASPA-Verification: I-D.ietf-sidrops-aspa-verification
   SIDROPS-STATE: I-D.ietf-sidrops-avoid-rpki-state-in-bgp
----
 
-abstract
+--- abstract
 
 This document specifies a set of standardized BGP communities to signal inter-AS routing security policy intent. Current mechanisms like ROA {{RFC6482}} {{RFC9582}} and ASPA {{ASPA-Profile}} {{ASPA-Verification}} provide validation states, but leave "NotFound" or "Unknown" states ambiguous. This document defines transitive communities that allow an Origin AS to explicitly signal its security requirements, such as strict enforcement of ROA and ASPA, to downstream Autonomous Systems (AS). This mechanism provides downstream ASes with the explicit authorization to treat unvalidated routes as invalid, reducing the risk of accidental outages while improving hijack resilience. Unlike validation states, these communities communicate the origin's security expectations (e.g., ROA/ASPA strict enforcement) to all downstream ASes. The document emphasizes the transitive nature of these signals to ensure end-to-end security policy coordination. By enabling explicit signaling of security requirements, this mechanism allows downstream ASes to make informed decisions and enforce consistent policies, improving the overall security of inter-AS routing without risking accidental outages due to misinterpretation of validation states.
 
