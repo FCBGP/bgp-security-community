@@ -18,7 +18,7 @@ venue:
   # group: "Inter-Domain Routing"
   # type: "Working Group"
   # mail: "idr@ietf.org"
-  arch: "https://mailarchive.ietf.org/arch/browse/idr/"
+  # arch: "https://mailarchive.ietf.org/arch/browse/idr/"
   github: "FCBGP/bgp-security-community"
   latest: "https://FCBGP.github.io/bgp-security-community/draft-guo-idr-bgp-security-community.html"
 
@@ -94,11 +94,11 @@ Intermediate ASes SHOULD preserve these communities. If an Intermediate AS suppo
 
 # Security Considerations
 
-### Authenticity
+## Authenticity
 
 While communities are transitive, they are not cryptographically signed (unlike BGPsec). An adversary could potentially attach or strip these communities. Therefore, these communities SHOULD be treated as "Policy Recommendations" unless combined with BGPsec or other path validation mechanisms. And these communities MUST NOT override a "Valid" RPKI state. They serve as a "Strictness Toggle" for states that are otherwise ambiguous.
 
-### Mitigation of DoS Risks
+## Mitigation of DoS Risks
 
 By removing active "drop" commands, this document minimizes the risk of a malicious actor using these communities to trigger a network-wide outage. The mandatory check against the Origin AS in the AS-PATH ensures that only the legitimate owner of the prefix (or someone who has successfully hijacked the entire path) can signal the policy.
 
