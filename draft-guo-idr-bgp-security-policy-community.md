@@ -181,11 +181,12 @@ This document defines new BGP Community values for signaling security policy int
 
 The format of these communities are `Global-Administrator:Action-ID:Parameter`. The Global Administrator MUST be the ASN of the Origin AS.
 
-
+~~~
    Action ID |   Name      | Policy Intent Description
   ----------------------------------------------------------------------------------
     1000     |  ROA-Strict | Reject if RPKI state is Invalid OR NotFound.
     1001     | ASPA-Strict | Reject if ASPA validation state is Invalid or Unknown.
+~~~
 
 ## Standard Community Mapping (Legacy)
 
