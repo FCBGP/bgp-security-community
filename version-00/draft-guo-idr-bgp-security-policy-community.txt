@@ -1,0 +1,342 @@
+
+
+
+
+Inter-Domain Routing                                              Y. Guo
+Internet-Draft                                   Zhongguancun Laboratory
+Intended status: Standards Track                                   K. Xu
+Expires: 12 August 2026                              Tsinghua University
+                                                                 X. Wang
+                                               Capital Normal University
+                                                         8 February 2026
+
+
+       Using BGP Community for Inter-AS Security Policy Signaling
+           draft-guo-idr-bgp-security-policy-community-latest
+
+Abstract
+
+   This document specifies a set of standardized BGP communities to
+   signal inter-AS routing security policy intent.  Current mechanisms
+   like ROA [RFC6482] [RFC9582] and ASPA [ASPA-Profile]
+   [ASPA-Verification] provide validation states, but leave "NotFound"
+   or "Unknown" states ambiguous.  This document defines transitive
+   communities that allow an Origin AS to explicitly signal its security
+   requirements, such as strict enforcement of ROA and ASPA, to
+   downstream Autonomous Systems (AS).  This mechanism provides
+   downstream ASes with the explicit authorization to treat unvalidated
+   routes as invalid, reducing the risk of accidental outages while
+   improving hijack resilience.  Unlike validation states, these
+   communities communicate the origin's security expectations (e.g.,
+   ROA/ASPA strict enforcement) to all downstream ASes.  The document
+   emphasizes the transitive nature of these signals to ensure end-to-
+   end security policy coordination.  By enabling explicit signaling of
+   security requirements, this mechanism allows downstream ASes to make
+   informed decisions and enforce consistent policies, improving the
+   overall security of inter-AS routing without risking accidental
+   outages due to misinterpretation of validation states.
+
+About This Document
+
+   This note is to be removed before publishing as an RFC.
+
+   The latest revision of this draft can be found at
+   https://FCBGP.github.io/bgp-security-community/draft-guo-idr-bgp-
+   security-community.html.  Status information for this document may be
+   found at https://datatracker.ietf.org/doc/draft-guo-idr-bgp-security-
+   policy-community/.
+
+   Source for this draft and an issue tracker can be found at
+   https://github.com/FCBGP/bgp-security-community.
+
+Status of This Memo
+
+   This Internet-Draft is submitted in full conformance with the
+   provisions of BCP 78 and BCP 79.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at https://datatracker.ietf.org/drafts/current/.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on 12 August 2026.
+
+Copyright Notice
+
+   Copyright (c) 2026 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents (https://trustee.ietf.org/
+   license-info) in effect on the date of publication of this document.
+   Please review these documents carefully, as they describe your rights
+   and restrictions with respect to this document.  Code Components
+   extracted from this document must include Revised BSD License text as
+   described in Section 4.e of the Trust Legal Provisions and are
+   provided without warranty as described in the Revised BSD License.
+
+Table of Contents
+
+   1.  Introduction
+   2.  Conventions and Definitions
+   3.  Policy Signaling and Transitivity
+     3.1.  Transitive Property Requirement
+   4.  Protocol Operations
+     4.1.  Origin AS Behavior
+     4.2.  Intermediate AS Behavior
+   5.  Security Considerations
+     5.1.  Authenticity
+     5.2.  Mitigation of DoS Risks
+   6.  IANA Considerations
+     6.1.  Standard Community Mapping (Legacy)
+   7.  References
+     7.1.  Normative References
+     7.2.  Informative References
+   Acknowledgments
+   Authors' Addresses
+
+1.  Introduction
+
+   Internet routing security relies on distributed validation mechanisms
+   like RPKI [RFC6480], ROA [RFC6482] [RFC9582], and ASPA [ASPA-Profile]
+   [ASPA-Verification].  However, there is a functional gap between
+   "knowing a route's validity" and "knowing the origin's policy
+   intent."
+
+   It has following gaps: these security mechanisms are often locally
+   enforced only.  No consistent method exists for an AS to signal its
+   security requirements for propagated prefixes.  [SIDROPS-STATE]
+   advises against carrying actual validation state in BGP.  This leaves
+   downstream ASes with ambiguity.  For example, when a Transit AS
+   observes an RPKI "NotFound" state, it cannot distinguish between an
+   Origin AS that has not deployed RPKI and an Origin AS that has
+   deployed RPKI but suffered a configuration error or a hijack attempt.
+
+   This document introduces BGP Security Policy Communities to bridge
+   these gaps.  These are signals that travel with the NLRI to inform
+   every AS on the AS-PATH about the protection level applied to the
+   prefix.  By signaling security policy intent, an Origin AS can
+   explicitly inform the network that its prefixes MUST always satisfy
+   specific security criteria.  For example, an Origin AS can signal
+   that its prefixes MUST be rejected if they are not RPKI valid, even
+   if the local RPKI check returns "NotFound".  This allows downstream
+   ASes to make informed decisions and enforce security policies
+   consistently, without risking accidental outages due to
+   misinterpretation of validation states.
+
+2.  Conventions and Definitions
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+   "OPTIONAL" in this document are to be interpreted as described in
+   BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all
+   capitals, as shown here.
+
+3.  Policy Signaling and Transitivity
+
+3.1.  Transitive Property Requirement
+
+   All communities defined in this document MUST be transitive to ensure
+   the security intent reaches the entire AS-PATH.
+
+   *  Large Communities: This document will use large communities to
+      carry the security policy sign of Origin AS.  As per [RFC8092],
+      the Global Administrator field MUST contain the ASN of the Origin
+      AS that set the policy.
+
+   *  Propagation: Intermediate ASes SHOULD NOT strip these communities.
+      If an AS modifies the AS-PATH (e.g., via AS-Prepend), it MUST
+      maintain these communities.
+
+4.  Protocol Operations
+
+4.1.  Origin AS Behavior
+
+   The Origin AS SHALL attach the appropriate Security Policy Community
+   when advertising a prefix.  It MUST ensure that its published RPKI
+   ROAs and ASPA objects are consistent with the signaled community to
+   avoid self-inflicted DoS.  For example, an AS 65001 supporting strict
+   RPKI-ROA filtering would attach:
+
+   *  Large Community: 65001:1000:1 (ROA-Strict)
+
+4.2.  Intermediate AS Behavior
+
+   Intermediate ASes SHOULD preserve these communities.  If an
+   Intermediate AS supports this specification, it MAY use these
+   communities to automate its ingress/egress filtering policies.  An AS
+   receiving a route with these communities MUST process them as
+   follows:
+
+   1.  Validation: The AS MUST verify that the Global Administrator ASN
+       in the Large Community matches the Rightmost (Origin) AS in the
+       AS-PATH.  If they do not match, the community MUST be ignored to
+       prevent unauthorized policy signaling.
+
+   2.  ROA-Strict Enforcement: If ROA-Strict is present and the local
+       RPKI check returns NotFound or Invalid, the AS SHOULD treat the
+       route as Invalid and apply its local filtering policy (typically
+       dropping the route).
+
+   3.  ASPA-Strict Enforcement: If ASPA-Strict is present and the ASPA
+       validation state is Unknown or Invalid, the AS SHOULD reject the
+       route.
+
+5.  Security Considerations
+
+5.1.  Authenticity
+
+   While communities are transitive, they are not cryptographically
+   signed (unlike BGPsec).  An adversary could potentially attach or
+   strip these communities.  Therefore, these communities SHOULD be
+   treated as "Policy Recommendations" unless combined with BGPsec or
+   other path validation mechanisms.  And these communities MUST NOT
+   override a "Valid" RPKI state.  They serve as a "Strictness Toggle"
+   for states that are otherwise ambiguous.
+
+5.2.  Mitigation of DoS Risks
+
+   By removing active "drop" commands, this document minimizes the risk
+   of a malicious actor using these communities to trigger a network-
+   wide outage.  The mandatory check against the Origin AS in the AS-
+   PATH ensures that only the legitimate owner of the prefix (or someone
+   who has successfully hijacked the entire path) can signal the policy.
+
+6.  IANA Considerations
+
+   This document defines new BGP Community values for signaling security
+   policy intent.  IANA is requested to create a sub-registry "BGP
+   Security Policy Action IDs" under the "BGP Large Communities"
+   registry.
+
+   The format of these communities are Global-Administrator:Action-
+   ID:Parameter.  The Global Administrator MUST be the ASN of the Origin
+   AS.
+
+        +===========+=============+==============================+
+        | Action ID | Name        | Policy Intent Description    |
+        +===========+=============+==============================+
+        | 1000      | ROA-Strict  | Reject if RPKI state is      |
+        |           |             | Invalid OR NotFound.         |
+        +-----------+-------------+------------------------------+
+        | 1001      | ASPA-Strict | Reject if ASPA validation    |
+        |           |             | state is Invalid or Unknown. |
+        +-----------+-------------+------------------------------+
+
+                                 Table 1
+
+6.1.  Standard Community Mapping (Legacy)
+
+   For [RFC1997] support, the following values are assigned from the
+   Well-Known range:
+
+   *  65535:1000 (ROA-Strict)
+
+   *  65535:1001 (ASPA-Strict)
+
+7.  References
+
+7.1.  Normative References
+
+   [RFC1997]  Chandra, R., Traina, P., and T. Li, "BGP Communities
+              Attribute", RFC 1997, DOI 10.17487/RFC1997, August 1996,
+              <https://www.rfc-editor.org/rfc/rfc1997>.
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119,
+              DOI 10.17487/RFC2119, March 1997,
+              <https://www.rfc-editor.org/rfc/rfc2119>.
+
+   [RFC4271]  Rekhter, Y., Ed., Li, T., Ed., and S. Hares, Ed., "A
+              Border Gateway Protocol 4 (BGP-4)", RFC 4271,
+              DOI 10.17487/RFC4271, January 2006,
+              <https://www.rfc-editor.org/rfc/rfc4271>.
+
+   [RFC4360]  Sangli, S., Tappan, D., and Y. Rekhter, "BGP Extended
+              Communities Attribute", RFC 4360, DOI 10.17487/RFC4360,
+              February 2006, <https://www.rfc-editor.org/rfc/rfc4360>.
+
+   [RFC8092]  Heitz, J., Ed., Snijders, J., Ed., Patel, K., Bagdonas,
+              I., and N. Hilliard, "BGP Large Communities Attribute",
+              RFC 8092, DOI 10.17487/RFC8092, February 2017,
+              <https://www.rfc-editor.org/rfc/rfc8092>.
+
+   [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
+              2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
+              May 2017, <https://www.rfc-editor.org/rfc/rfc8174>.
+
+7.2.  Informative References
+
+   [ASPA-Profile]
+              Azimov, A., Uskov, E., Bush, R., Snijders, J., Housley,
+              R., and B. Maddison, "A Profile for Autonomous System
+              Provider Authorization", Work in Progress, Internet-Draft,
+              draft-ietf-sidrops-aspa-profile-22, 6 February 2026,
+              <https://datatracker.ietf.org/doc/html/draft-ietf-sidrops-
+              aspa-profile-22>.
+
+   [ASPA-Verification]
+              Azimov, A., Bogomazov, E., Bush, R., Patel, K., Snijders,
+              J., and K. Sriram, "BGP AS_PATH Verification Based on
+              Autonomous System Provider Authorization (ASPA) Objects",
+              Work in Progress, Internet-Draft, draft-ietf-sidrops-aspa-
+              verification-24, 19 October 2025,
+              <https://datatracker.ietf.org/doc/html/draft-ietf-sidrops-
+              aspa-verification-24>.
+
+   [RFC6480]  Lepinski, M. and S. Kent, "An Infrastructure to Support
+              Secure Internet Routing", RFC 6480, DOI 10.17487/RFC6480,
+              February 2012, <https://www.rfc-editor.org/rfc/rfc6480>.
+
+   [RFC6482]  Lepinski, M., Kent, S., and D. Kong, "A Profile for Route
+              Origin Authorizations (ROAs)", RFC 6482,
+              DOI 10.17487/RFC6482, February 2012,
+              <https://www.rfc-editor.org/rfc/rfc6482>.
+
+   [RFC8205]  Lepinski, M., Ed. and K. Sriram, Ed., "BGPsec Protocol
+              Specification", RFC 8205, DOI 10.17487/RFC8205, September
+              2017, <https://www.rfc-editor.org/rfc/rfc8205>.
+
+   [RFC9234]  Azimov, A., Bogomazov, E., Bush, R., Patel, K., and K.
+              Sriram, "Route Leak Prevention and Detection Using Roles
+              in UPDATE and OPEN Messages", RFC 9234,
+              DOI 10.17487/RFC9234, May 2022,
+              <https://www.rfc-editor.org/rfc/rfc9234>.
+
+   [RFC9582]  Snijders, J., Maddison, B., Lepinski, M., Kong, D., and S.
+              Kent, "A Profile for Route Origin Authorizations (ROAs)",
+              RFC 9582, DOI 10.17487/RFC9582, May 2024,
+              <https://www.rfc-editor.org/rfc/rfc9582>.
+
+   [SIDROPS-STATE]
+              Snijders, J., Fiebig, T., and M. Stucchi, "Guidance to
+              Avoid Carrying RPKI Validation States in Transitive BGP
+              Path Attributes", Work in Progress, Internet-Draft, draft-
+              ietf-sidrops-avoid-rpki-state-in-bgp-03, 26 January 2026,
+              <https://datatracker.ietf.org/doc/html/draft-ietf-sidrops-
+              avoid-rpki-state-in-bgp-03>.
+
+Acknowledgments
+
+   TODO acknowledge.
+
+Authors' Addresses
+
+   Yangfei Guo
+   Zhongguancun Laboratory
+   Email: guoyangfei@zgclab.edu.cn
+
+
+   Ke Xu
+   Tsinghua University
+   Email: xuke@tsinghua.edu.cn
+
+
+   Xiaoliang Wang
+   Capital Normal University
+   Email: wangxiaoliang0623@foxmail.com
