@@ -186,22 +186,24 @@ Table of Contents
    BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all
    capitals, as shown here.
 
-   Strict:  In this document, the term "Strict" as used in community
-      names (e.g., "ROA-Strict") refers solely to the Origin AS's stated
+   Strict:
+      In this document, the term "Strict" as used in community names
+      (e.g., "ROA-Strict") refers solely to the Origin AS's stated
       policy preference regarding the handling of ambiguous validation
       outcomes.  It does not imply any mandated filtering, dropping, or
       preference change by downstream ASes, and it MUST NOT be
       interpreted as a remote instruction to suppress routes.
 
-   Security Policy Community:  A BGP Community or Large Community
-      defined by this document to convey origin-declared routing
-      security policy intent.
+   Security Policy Community:
+      A BGP Community or Large Community defined by this document to
+      convey origin-declared routing security policy intent.
 
-   Validation State:  A locally derived outcome of a security validation
-      mechanism, such as RPKI Prefix Origin Validation or ASPA-based
-      path validation (e.g., "Valid", "Invalid", "NotFound", "Unknown").
-      Validation state is explicitly out of scope for the communities
-      defined in this document.
+   Validation State:
+      A locally derived outcome of a security validation mechanism, such
+      as RPKI Prefix Origin Validation or ASPA-based path validation
+      (e.g., "Valid", "Invalid", "NotFound", "Unknown").  Validation
+      state is explicitly out of scope for the communities defined in
+      this document.
 
 3.  Policy Signaling and Transitivity
 
