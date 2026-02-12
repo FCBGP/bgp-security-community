@@ -239,6 +239,7 @@ The format of these communities are "Global-Administrator:Action-ID:Parameter". 
 
 The "Strict" qualifier expresses only an origin-declared preference and does not define any required downstream behavior.
 
+~~~~~~
   Action ID | Name        | Policy Intent Description
   ---------------------------------------------------
   1000      | ROA-Strict  | Origin expresses a preference for strict handling of
@@ -247,6 +248,7 @@ The "Strict" qualifier expresses only an origin-declared preference and does not
   1001      | ASPA-Strict | Origin expresses a preference for strict handling of
             |             | routes when ASPA validation results are Invalid or
             |             | Unknown.
+~~~~~~
 
 ## Standard Community Mapping
 
