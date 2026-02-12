@@ -88,12 +88,15 @@ This signaling enables downstream ASes to distinguish between intentional non-de
 
 {::boilerplate bcp14-tagged}
 
+{: vspace="0"}
 Strict:
 : In this document, the term "Strict" as used in community names (e.g., "ROA-Strict") refers solely to the Origin AS's stated policy preference regarding the handling of ambiguous validation outcomes. It does not imply any mandated filtering, dropping, or preference change by downstream ASes, and it MUST NOT be interpreted as a remote instruction to suppress routes.
 
+{: vspace="0"}
 Security Policy Community:
 : A BGP Community or Large Community defined by this document to convey origin-declared routing security policy intent.
 
+{: vspace="0"}
 Validation State:
 : A locally derived outcome of a security validation mechanism, such as RPKI Prefix Origin Validation or ASPA-based path validation (e.g., "Valid", "Invalid", "NotFound", "Unknown"). Validation state is explicitly out of scope for the communities defined in this document.
 
