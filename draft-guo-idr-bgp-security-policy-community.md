@@ -139,7 +139,7 @@ No mandatory processing behavior is defined, and no interoperability dependency 
 
 ## Origin AS Behavior
 
-An Origin AS that chooses to signal security policy intent SHALL attach the appropriate Security Policy Community when originating a route. It MUST ensure that its published RPKI ROAs and ASPA objects are consistent with the signaled community to avoid self-inflicted DoS. 
+An Origin AS that chooses to signal security policy intent SHALL attach the appropriate Security Policy Community when originating a route. It MUST ensure that its published RPKI ROAs and ASPA objects are consistent with the signaled community to avoid self-inflicted DoS.
 
 For example, an AS 65001 that wishes to indicate a strict policy posture with respect to ROA-based validation ambiguity for a given prefix may attach the following Large Community:
 
