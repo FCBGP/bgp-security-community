@@ -464,13 +464,14 @@ Table of Contents
    The "Strict" qualifier expresses only an origin-declared preference
    and does not define any required downstream behavior.
 
-   Action ID | Name | Policy Intent Description
-   --------------------------------------------------- 1000 | ROA-
-   Strict | Origin expresses a preference for strict handling of | |
-   routes when RPKI validation results are Invalid or | | NotFound.
-   1001 | ASPA-Strict | Origin expresses a preference for strict
-   handling of | | routes when ASPA validation results are Invalid
-   or | | Unknown.
+  Action ID | Name        | Policy Intent Description
+  ---------------------------------------------------
+  1000      | ROA-Strict  | Origin expresses a preference for strict handling of
+            |             | routes when RPKI validation results are Invalid or
+            |             | NotFound.
+  1001      | ASPA-Strict | Origin expresses a preference for strict handling of
+            |             | routes when ASPA validation results are Invalid or
+            |             | Unknown.
 
 6.2.  Standard Community Mapping
 
