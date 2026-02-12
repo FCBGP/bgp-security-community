@@ -4,11 +4,11 @@
 
 Inter-Domain Routing                                              Y. Guo
 Internet-Draft                                   Zhongguancun Laboratory
-Intended status: Standards Track                                   K. Xu
-Expires: 13 August 2026                              Tsinghua University
+Intended status: Informational                                     K. Xu
+Expires: 16 August 2026                              Tsinghua University
                                                                  X. Wang
                                                Capital Normal University
-                                                         9 February 2026
+                                                        12 February 2026
 
 
        Using BGP Community for Inter-AS Security Policy Signaling
@@ -66,7 +66,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 13 August 2026.
+   This Internet-Draft will expire on 16 August 2026.
 
 Copyright Notice
 
@@ -103,7 +103,7 @@ Table of Contents
      5.5.  Threat Model Summary
    6.  IANA Considerations
      6.1.  Large Community Mapping
-     6.2.  Standard Community Mapping (Legacy)
+     6.2.  Standard Community Mapping
    7.  References
      7.1.  Normative References
      7.2.  Informative References
@@ -131,8 +131,8 @@ Table of Contents
 
    These security mechanisms are often locally enforced only.  No
    consistent method exists for an AS to signal its security
-   requirements for propagated prefixes.  [SIDROPS-STATE] advises
-   against carrying actual validation state in BGP.  This leaves
+   requirements for propagated prefixes.  [AVOID-RPKI-STATE-IN-BGP]
+   advises against carrying actual validation state in BGP.  This leaves
    downstream ASes with ambiguity.  For example, when a Transit AS
    observes an RPKI "NotFound" state, it cannot distinguish between an
    Origin AS that has not deployed RPKI and an Origin AS that has
@@ -180,6 +180,13 @@ Table of Contents
    BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all
    capitals, as shown here.
 
+   Strict:  In this document, the term Strict'' as used in community
+      names (e.g.,ROA-Strict'') refers solely to the Origin AS's stated
+      policy preference regarding the handling of ambiguous validation
+      outcomes.  It does not imply any mandated filtering, dropping, or
+      preference change by downstream ASes, and it must not be
+      interpreted as a remote instruction to suppress routes.
+
 3.  Policy Signaling and Transitivity
 
 3.1.  Transitive Property Requirement
@@ -202,7 +209,7 @@ Table of Contents
    *  validation state, which is derived locally from cryptographic or
       registry-based mechanisms; and
 
-   *  policy intent, which reflects the Origin AS’s operational
+   *  policy intent, which reflects the Origin AS's operational
       expectations.
 
    The communities defined herein exclusively signal policy intent.
@@ -213,8 +220,9 @@ Table of Contents
    that validation has been successfully performed, nor as a substitute
    for local validation.
 
-   This design explicitly aligns with the guidance in [SIDROPS-STATE],
-   and avoids propagating dynamic security state within BGP.
+   This design explicitly aligns with the guidance in
+   [AVOID-RPKI-STATE-IN-BGP], and avoids propagating dynamic security
+   state within BGP.
 
 4.  Protocol Operations
 
@@ -310,6 +318,14 @@ Table of Contents
    provide independent security guarantees.  It is not intended for
    real-time attack mitigation or automated incident response.
 
+   This document follows the guidance in [AVOID-RPKI-STATE-IN-BGP] by
+   not carrying any RPKI validation state in BGP.  The communities
+   defined here do not encode or imply specific validation outcomes
+   (such as Valid, Invalid, or NotFound).  Instead, they allow an Origin
+   AS to express a relatively stable policy posture regarding how
+   downstream ASes may treat ambiguous validation results, if they
+   choose to do so.
+
 5.1.  Authenticity and Integrity
 
    The communities defined in this document are not cryptographically
@@ -401,12 +417,15 @@ Table of Contents
    are used to avoid ASN exhaustion and ambiguity associated with 16-bit
    Global Administrator fields.
 
-   IANA is requested to create a sub-registry "BGP Security Policy
-   Action IDs" under the "BGP Large Communities" registry.
+   IANA is requested to create a sub-registry BGP Security Policy Action
+   IDs'' under theBGP Large Communities'' registry.
 
-   The format of these communities are Global-Administrator:Action-
-   ID:Parameter.  The Global Administrator MUST be the ASN of the Origin
-   AS.
+   The format of these communities are ``Global-Administrator:Action-
+   ID:Parameter''.  The Global Administrator MUST be the ASN of the
+   Origin AS.
+
+   The ``Strict'' qualifier expresses only an origin-declared preference
+   and does not define any required downstream behavior.
 
    Action ID | Name | Policy Intent Description
    --------------------------------------------------- 1000 | ROA-
@@ -416,7 +435,7 @@ Table of Contents
    handling of | | routes when ASPA validation results are Invalid
    or | | Unknown.
 
-6.2.  Standard Community Mapping (Legacy)
+6.2.  Standard Community Mapping
 
    This mapping is provided solely to facilitate incremental deployment
    in networks that do not yet support BGP Large Communities.
@@ -424,9 +443,9 @@ Table of Contents
    For [RFC1997] support, the following values are assigned from the
    Well-Known range:
 
-   *  65535:1000 (ROA-Strict)
+   *  ``65535:1000'' (ROA-Strict)
 
-   *  65535:1001 (ASPA-Strict)
+   *  ``65535:1001'' (ASPA-Strict)
 
 7.  References
 
@@ -478,6 +497,14 @@ Table of Contents
               <https://datatracker.ietf.org/doc/html/draft-ietf-sidrops-
               aspa-verification-24>.
 
+   [AVOID-RPKI-STATE-IN-BGP]
+              Snijders, J., Fiebig, T., and M. Stucchi, "Guidance to
+              Avoid Carrying RPKI Validation States in Transitive BGP
+              Path Attributes", Work in Progress, Internet-Draft, draft-
+              ietf-sidrops-avoid-rpki-state-in-bgp-03, 26 January 2026,
+              <https://datatracker.ietf.org/doc/html/draft-ietf-sidrops-
+              avoid-rpki-state-in-bgp-03>.
+
    [RFC6480]  Lepinski, M. and S. Kent, "An Infrastructure to Support
               Secure Internet Routing", RFC 6480, DOI 10.17487/RFC6480,
               February 2012, <https://www.rfc-editor.org/rfc/rfc6480>.
@@ -502,18 +529,10 @@ Table of Contents
               RFC 9582, DOI 10.17487/RFC9582, May 2024,
               <https://www.rfc-editor.org/rfc/rfc9582>.
 
-   [SIDROPS-STATE]
-              Snijders, J., Fiebig, T., and M. Stucchi, "Guidance to
-              Avoid Carrying RPKI Validation States in Transitive BGP
-              Path Attributes", Work in Progress, Internet-Draft, draft-
-              ietf-sidrops-avoid-rpki-state-in-bgp-03, 26 January 2026,
-              <https://datatracker.ietf.org/doc/html/draft-ietf-sidrops-
-              avoid-rpki-state-in-bgp-03>.
-
 Appendix A.  Parameter Field Extensibility
 
-   The "Parameter" field in the BGP Security Policy Community is
-   explicitly designed for extensibility.  Currently, a value of "1"
+   The Parameter'' field in the BGP Security Policy Community is
+   explicitly designed for extensibility.  Currently, a value of1''
    conveys default strict enforcement for security actions (e.g., ROA-
    Strict or ASPA-Strict).  Future assignments may introduce further
    parameters to support nuanced policy signaling, such as variant
@@ -522,13 +541,13 @@ Appendix A.  Parameter Field Extensibility
 
    Example encodings:
 
-   *  65001:1000:1 (ROA-Strict, default strict enforcement)
+   *  ``65001:1000:1'' (ROA-Strict, default strict enforcement)
 
-   *  65001:1000:2 (ROA-Strict, but only for prefixes with maxLength
+   *  ``65001:1000:2'' (ROA-Strict, but only for prefixes with maxLength
       constraints, a future possible assignment)
 
-   *  65001:1002:1 (hypothetical new Action-ID for a future policy,
-      e.g., “AS-Cones Strict”)
+   *  65001:1002:1'' (hypothetical new Action-ID for a future policy,
+      e.g.,AS-Cones Strict'')
 
    The Action-ID and Parameter range is managed through IANA for orderly
    growth as the community adopts richer security policies.
@@ -560,7 +579,8 @@ B.1.  Relationship to RPKI, ROA, and ASPA
 
    This mechanism is therefore complementary to RPKI and ASPA.  It
    operates strictly at the policy signaling layer and does not export
-   validation state, consistent with the guidance in [SIDROPS-STATE].
+   validation state, consistent with the guidance in
+   [AVOID-RPKI-STATE-IN-BGP].
 
 B.2.  Relationship to BGPsec
 
@@ -609,13 +629,13 @@ B.5.  Summary of Scope Separation
 
    *  This document does not export validation state;
 
-   *  This document does not assert routing correctness or
+   *  this document does not assert routing correctness or
       authorization;
 
-   *  This document does not define forwarding or traffic engineering
+   *  this document does not define forwarding or traffic engineering
       behavior;
 
-   *  This document does not mandate filtering or rejection behavior.
+   *  this document does not mandate filtering or rejection behavior.
 
    The mechanism is limited to expressing origin-declared security
    policy intent and is designed to coexist with existing routing

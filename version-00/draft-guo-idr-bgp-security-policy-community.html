@@ -170,7 +170,7 @@
   font-weight: 400;
   font-display: swap;
   src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin-ext.woff2') format('woff2');
-  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 @font-face {
   font-family: 'Oxygen Mono';
@@ -178,7 +178,8 @@
   font-weight: 400;
   font-display: swap;
   src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
 }
 
 @font-face {
@@ -1053,7 +1054,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Guo, et al.</td>
-<td class="center">Expires 13 August 2026</td>
+<td class="center">Expires 16 August 2026</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1066,12 +1067,12 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <dd class="internet-draft">draft-guo-idr-bgp-security-policy-community-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-02-09" class="published">9 February 2026</time>
+<time datetime="2026-02-12" class="published">12 February 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
-<dd class="intended-status">Standards Track</dd>
+<dd class="intended-status">Informational</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2026-08-13">13 August 2026</time></dd>
+<dd class="expires"><time datetime="2026-08-16">16 August 2026</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1126,7 +1127,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 13 August 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 16 August 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1219,7 +1220,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
                 <p id="section-toc.1-1.6.2.1.1"><a href="#section-6.1" class="auto internal xref">6.1</a>.  <a href="#name-large-community-mapping" class="internal xref">Large Community Mapping</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.2">
-                <p id="section-toc.1-1.6.2.2.1"><a href="#section-6.2" class="auto internal xref">6.2</a>.  <a href="#name-standard-community-mapping-" class="internal xref">Standard Community Mapping (Legacy)</a></p>
+                <p id="section-toc.1-1.6.2.2.1"><a href="#section-6.2" class="auto internal xref">6.2</a>.  <a href="#name-standard-community-mapping" class="internal xref">Standard Community Mapping</a></p>
 </li>
             </ul>
 </li>
@@ -1274,7 +1275,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
       </h2>
 <p id="section-1-1">Inter-domain routing security mechanisms intentionally separate validation from policy. While this separation improves robustness, it also creates persistent operational ambiguity.<a href="#section-1-1" class="pilcrow">¶</a></p>
 <p id="section-1-2">Internet routing security relies on distributed validation mechanisms like RPKI <span>[<a href="#RFC6480" class="cite xref">RFC6480</a>]</span>, ROA <span>[<a href="#RFC6482" class="cite xref">RFC6482</a>]</span> <span>[<a href="#RFC9582" class="cite xref">RFC9582</a>]</span>, and ASPA <span>[<a href="#ASPA-Profile" class="cite xref">ASPA-Profile</a>]</span> <span>[<a href="#ASPA-Verification" class="cite xref">ASPA-Verification</a>]</span>. However, there is a functional gap between "knowing a route's validity" and "knowing the origin's policy intent."<a href="#section-1-2" class="pilcrow">¶</a></p>
-<p id="section-1-3">These security mechanisms are often locally enforced only. No consistent method exists for an AS to signal its security requirements for propagated prefixes. <span>[<a href="#SIDROPS-STATE" class="cite xref">SIDROPS-STATE</a>]</span> advises against carrying actual validation state in BGP. This leaves downstream ASes with ambiguity. For example, when a Transit AS observes an RPKI "NotFound" state, it cannot distinguish between an Origin AS that has not deployed RPKI and an Origin AS that has deployed RPKI but suffered a configuration error or a hijack attempt. Theses mechanisms do not allow an Origin AS to express:<a href="#section-1-3" class="pilcrow">¶</a></p>
+<p id="section-1-3">These security mechanisms are often locally enforced only. No consistent method exists for an AS to signal its security requirements for propagated prefixes. <span>[<a href="#AVOID-RPKI-STATE-IN-BGP" class="cite xref">AVOID-RPKI-STATE-IN-BGP</a>]</span> advises against carrying actual validation state in BGP. This leaves downstream ASes with ambiguity. For example, when a Transit AS observes an RPKI "NotFound" state, it cannot distinguish between an Origin AS that has not deployed RPKI and an Origin AS that has deployed RPKI but suffered a configuration error or a hijack attempt. Theses mechanisms do not allow an Origin AS to express:<a href="#section-1-3" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-1-4.1">
           <p id="section-1-4.1.1">whether it expects strict validation to be applied;<a href="#section-1-4.1.1" class="pilcrow">¶</a></p>
@@ -1312,6 +1313,13 @@ svg :is([fill="white"], [fill^="#fff"]) {
 "<span class="bcp14">MAY</span>", and "<span class="bcp14">OPTIONAL</span>" in this document are to be interpreted as
 described in BCP 14 <span>[<a href="#RFC2119" class="cite xref">RFC2119</a>]</span> <span>[<a href="#RFC8174" class="cite xref">RFC8174</a>]</span> when, and only when, they
 appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-2-2">
+        <dt id="section-2-2.1">Strict:</dt>
+        <dd style="margin-left: 1.5em" id="section-2-2.2">
+          <p id="section-2-2.2.1">In this document, the term <code>Strict'' as used in community names (e.g.,</code>ROA-Strict'') refers solely to the Origin AS's stated policy preference regarding the handling of ambiguous validation outcomes. It does not imply any mandated filtering, dropping, or preference change by downstream ASes, and it must not be interpreted as a remote instruction to suppress routes.<a href="#section-2-2.2.1" class="pilcrow">¶</a></p>
+</dd>
+      <dd class="break"></dd>
+</dl>
 </section>
 </div>
 <div id="policy-signaling-and-transitivity">
@@ -1339,12 +1347,12 @@ appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶<
             <p id="section-3.2-2.1.1">validation state, which is derived locally from cryptographic or registry-based mechanisms; and<a href="#section-3.2-2.1.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-3.2-2.2">
-            <p id="section-3.2-2.2.1">policy intent, which reflects the Origin AS’s operational expectations.<a href="#section-3.2-2.2.1" class="pilcrow">¶</a></p>
+            <p id="section-3.2-2.2.1">policy intent, which reflects the Origin AS's operational expectations.<a href="#section-3.2-2.2.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 <p id="section-3.2-3">The communities defined herein exclusively signal policy intent. They do not encode validation outcomes, confidence levels, or security posture of any AS other than the origin.<a href="#section-3.2-3" class="pilcrow">¶</a></p>
 <p id="section-3.2-4">Downstream ASes <span class="bcp14">MUST NOT</span> interpret these communities as an indication that validation has been successfully performed, nor as a substitute for local validation.<a href="#section-3.2-4" class="pilcrow">¶</a></p>
-<p id="section-3.2-5">This design explicitly aligns with the guidance in <span>[<a href="#SIDROPS-STATE" class="cite xref">SIDROPS-STATE</a>]</span>, and avoids propagating dynamic security state within BGP.<a href="#section-3.2-5" class="pilcrow">¶</a></p>
+<p id="section-3.2-5">This design explicitly aligns with the guidance in <span>[<a href="#AVOID-RPKI-STATE-IN-BGP" class="cite xref">AVOID-RPKI-STATE-IN-BGP</a>]</span>, and avoids propagating dynamic security state within BGP.<a href="#section-3.2-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1425,6 +1433,7 @@ appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶<
 <a href="#section-5" class="section-number selfRef">5. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
       </h2>
 <p id="section-5-1">This document defines a policy signaling mechanism using BGP communities. It does not define a security mechanism and does not provide independent security guarantees. It is not intended for real-time attack mitigation or automated incident response.<a href="#section-5-1" class="pilcrow">¶</a></p>
+<p id="section-5-2">This document follows the guidance in <span>[<a href="#AVOID-RPKI-STATE-IN-BGP" class="cite xref">AVOID-RPKI-STATE-IN-BGP</a>]</span> by not carrying any RPKI validation state in BGP. The communities defined here do not encode or imply specific validation outcomes (such as Valid, Invalid, or NotFound). Instead, they allow an Origin AS to express a relatively stable policy posture regarding how downstream ASes may treat ambiguous validation results, if they choose to do so.<a href="#section-5-2" class="pilcrow">¶</a></p>
 <div id="authenticity-and-integrity">
 <section id="section-5.1">
         <h3 id="name-authenticity-and-integrity">
@@ -1502,31 +1511,32 @@ decisions.<a href="#section-5.5-3" class="pilcrow">¶</a></p>
 <a href="#section-6.1" class="section-number selfRef">6.1. </a><a href="#name-large-community-mapping" class="section-name selfRef">Large Community Mapping</a>
         </h3>
 <p id="section-6.1-1">This document defines new BGP Community values for signaling security policy intent. Compared to Extended Communities, Large Communities are used to avoid ASN exhaustion and ambiguity associated with 16-bit Global Administrator fields.<a href="#section-6.1-1" class="pilcrow">¶</a></p>
-<p id="section-6.1-2">IANA is requested to create a sub-registry "BGP Security Policy Action IDs" under the "BGP Large Communities" registry.<a href="#section-6.1-2" class="pilcrow">¶</a></p>
-<p id="section-6.1-3">The format of these communities are <code>Global-Administrator:Action-ID:Parameter</code>. The Global Administrator <span class="bcp14">MUST</span> be the ASN of the Origin AS.<a href="#section-6.1-3" class="pilcrow">¶</a></p>
-<p id="section-6.1-4">Action ID | Name        | Policy Intent Description
+<p id="section-6.1-2">IANA is requested to create a sub-registry <code>BGP Security Policy Action IDs'' under the</code>BGP Large Communities'' registry.<a href="#section-6.1-2" class="pilcrow">¶</a></p>
+<p id="section-6.1-3">The format of these communities are ``Global-Administrator:Action-ID:Parameter''. The Global Administrator <span class="bcp14">MUST</span> be the ASN of the Origin AS.<a href="#section-6.1-3" class="pilcrow">¶</a></p>
+<p id="section-6.1-4">The ``Strict'' qualifier expresses only an origin-declared preference and does not define any required downstream behavior.<a href="#section-6.1-4" class="pilcrow">¶</a></p>
+<p id="section-6.1-5">Action ID | Name        | Policy Intent Description
   ---------------------------------------------------
   1000      | ROA-Strict  | Origin expresses a preference for strict handling of
             |             | routes when RPKI validation results are Invalid or
             |             | NotFound.
   1001      | ASPA-Strict | Origin expresses a preference for strict handling of
             |             | routes when ASPA validation results are Invalid or
-            |             | Unknown.<a href="#section-6.1-4" class="pilcrow">¶</a></p>
+            |             | Unknown.<a href="#section-6.1-5" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="standard-community-mapping-legacy">
+<div id="standard-community-mapping">
 <section id="section-6.2">
-        <h3 id="name-standard-community-mapping-">
-<a href="#section-6.2" class="section-number selfRef">6.2. </a><a href="#name-standard-community-mapping-" class="section-name selfRef">Standard Community Mapping (Legacy)</a>
+        <h3 id="name-standard-community-mapping">
+<a href="#section-6.2" class="section-number selfRef">6.2. </a><a href="#name-standard-community-mapping" class="section-name selfRef">Standard Community Mapping</a>
         </h3>
 <p id="section-6.2-1">This mapping is provided solely to facilitate incremental deployment in networks that do not yet support BGP Large Communities.<a href="#section-6.2-1" class="pilcrow">¶</a></p>
 <p id="section-6.2-2">For <span>[<a href="#RFC1997" class="cite xref">RFC1997</a>]</span> support, the following values are assigned from the Well-Known range:<a href="#section-6.2-2" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-6.2-3.1">
-            <p id="section-6.2-3.1.1"><code>65535:1000</code> (ROA-Strict)<a href="#section-6.2-3.1.1" class="pilcrow">¶</a></p>
+            <p id="section-6.2-3.1.1">``65535:1000'' (ROA-Strict)<a href="#section-6.2-3.1.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-6.2-3.2">
-            <p id="section-6.2-3.2.1"><code>65535:1001</code> (ASPA-Strict)<a href="#section-6.2-3.2.1" class="pilcrow">¶</a></p>
+            <p id="section-6.2-3.2.1">``65535:1001'' (ASPA-Strict)<a href="#section-6.2-3.2.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 </section>
@@ -1585,6 +1595,10 @@ decisions.<a href="#section-5.5-3" class="pilcrow">¶</a></p>
         <dd>
 <span class="refAuthor">Azimov, A.</span>, <span class="refAuthor">Bogomazov, E.</span>, <span class="refAuthor">Bush, R.</span>, <span class="refAuthor">Patel, K.</span>, <span class="refAuthor">Snijders, J.</span>, and <span class="refAuthor">K. Sriram</span>, <span class="refTitle">"BGP AS_PATH Verification Based on Autonomous System Provider Authorization (ASPA) Objects"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-sidrops-aspa-verification-24</span>, <time datetime="2025-10-19" class="refDate">19 October 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-sidrops-aspa-verification-24">https://datatracker.ietf.org/doc/html/draft-ietf-sidrops-aspa-verification-24</a>&gt;</span>. </dd>
 <dd class="break"></dd>
+<dt id="AVOID-RPKI-STATE-IN-BGP">[AVOID-RPKI-STATE-IN-BGP]</dt>
+        <dd>
+<span class="refAuthor">Snijders, J.</span>, <span class="refAuthor">Fiebig, T.</span>, and <span class="refAuthor">M. Stucchi</span>, <span class="refTitle">"Guidance to Avoid Carrying RPKI Validation States in Transitive BGP Path Attributes"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-sidrops-avoid-rpki-state-in-bgp-03</span>, <time datetime="2026-01-26" class="refDate">26 January 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-sidrops-avoid-rpki-state-in-bgp-03">https://datatracker.ietf.org/doc/html/draft-ietf-sidrops-avoid-rpki-state-in-bgp-03</a>&gt;</span>. </dd>
+<dd class="break"></dd>
 <dt id="RFC6480">[RFC6480]</dt>
         <dd>
 <span class="refAuthor">Lepinski, M.</span> and <span class="refAuthor">S. Kent</span>, <span class="refTitle">"An Infrastructure to Support Secure Internet Routing"</span>, <span class="seriesInfo">RFC 6480</span>, <span class="seriesInfo">DOI 10.17487/RFC6480</span>, <time datetime="2012-02" class="refDate">February 2012</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc6480">https://www.rfc-editor.org/rfc/rfc6480</a>&gt;</span>. </dd>
@@ -1602,12 +1616,8 @@ decisions.<a href="#section-5.5-3" class="pilcrow">¶</a></p>
 <span class="refAuthor">Azimov, A.</span>, <span class="refAuthor">Bogomazov, E.</span>, <span class="refAuthor">Bush, R.</span>, <span class="refAuthor">Patel, K.</span>, and <span class="refAuthor">K. Sriram</span>, <span class="refTitle">"Route Leak Prevention and Detection Using Roles in UPDATE and OPEN Messages"</span>, <span class="seriesInfo">RFC 9234</span>, <span class="seriesInfo">DOI 10.17487/RFC9234</span>, <time datetime="2022-05" class="refDate">May 2022</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9234">https://www.rfc-editor.org/rfc/rfc9234</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC9582">[RFC9582]</dt>
-        <dd>
-<span class="refAuthor">Snijders, J.</span>, <span class="refAuthor">Maddison, B.</span>, <span class="refAuthor">Lepinski, M.</span>, <span class="refAuthor">Kong, D.</span>, and <span class="refAuthor">S. Kent</span>, <span class="refTitle">"A Profile for Route Origin Authorizations (ROAs)"</span>, <span class="seriesInfo">RFC 9582</span>, <span class="seriesInfo">DOI 10.17487/RFC9582</span>, <time datetime="2024-05" class="refDate">May 2024</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9582">https://www.rfc-editor.org/rfc/rfc9582</a>&gt;</span>. </dd>
-<dd class="break"></dd>
-<dt id="SIDROPS-STATE">[SIDROPS-STATE]</dt>
       <dd>
-<span class="refAuthor">Snijders, J.</span>, <span class="refAuthor">Fiebig, T.</span>, and <span class="refAuthor">M. Stucchi</span>, <span class="refTitle">"Guidance to Avoid Carrying RPKI Validation States in Transitive BGP Path Attributes"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-sidrops-avoid-rpki-state-in-bgp-03</span>, <time datetime="2026-01-26" class="refDate">26 January 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-sidrops-avoid-rpki-state-in-bgp-03">https://datatracker.ietf.org/doc/html/draft-ietf-sidrops-avoid-rpki-state-in-bgp-03</a>&gt;</span>. </dd>
+<span class="refAuthor">Snijders, J.</span>, <span class="refAuthor">Maddison, B.</span>, <span class="refAuthor">Lepinski, M.</span>, <span class="refAuthor">Kong, D.</span>, and <span class="refAuthor">S. Kent</span>, <span class="refTitle">"A Profile for Route Origin Authorizations (ROAs)"</span>, <span class="seriesInfo">RFC 9582</span>, <span class="seriesInfo">DOI 10.17487/RFC9582</span>, <time datetime="2024-05" class="refDate">May 2024</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9582">https://www.rfc-editor.org/rfc/rfc9582</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 </dl>
 </section>
@@ -1619,17 +1629,17 @@ decisions.<a href="#section-5.5-3" class="pilcrow">¶</a></p>
       <h2 id="name-parameter-field-extensibili">
 <a href="#appendix-A" class="section-number selfRef">Appendix A. </a><a href="#name-parameter-field-extensibili" class="section-name selfRef">Parameter Field Extensibility</a>
       </h2>
-<p id="appendix-A-1">The "Parameter" field in the BGP Security Policy Community is explicitly designed for extensibility. Currently, a value of "1" conveys default strict enforcement for security actions (e.g., ROA-Strict or ASPA-Strict). Future assignments may introduce further parameters to support nuanced policy signaling, such as variant filtering levels, time-limited policies, or security requirements specific to more recent routing security enhancements.<a href="#appendix-A-1" class="pilcrow">¶</a></p>
+<p id="appendix-A-1">The <code>Parameter'' field in the BGP Security Policy Community is explicitly designed for extensibility. Currently, a value of</code>1'' conveys default strict enforcement for security actions (e.g., ROA-Strict or ASPA-Strict). Future assignments may introduce further parameters to support nuanced policy signaling, such as variant filtering levels, time-limited policies, or security requirements specific to more recent routing security enhancements.<a href="#appendix-A-1" class="pilcrow">¶</a></p>
 <p id="appendix-A-2">Example encodings:<a href="#appendix-A-2" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="appendix-A-3.1">
-          <p id="appendix-A-3.1.1"><code>65001:1000:1</code> (ROA-Strict, default strict enforcement)<a href="#appendix-A-3.1.1" class="pilcrow">¶</a></p>
+          <p id="appendix-A-3.1.1">``65001:1000:1'' (ROA-Strict, default strict enforcement)<a href="#appendix-A-3.1.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="appendix-A-3.2">
-          <p id="appendix-A-3.2.1"><code>65001:1000:2</code> (ROA-Strict, but only for prefixes with maxLength constraints, a future possible assignment)<a href="#appendix-A-3.2.1" class="pilcrow">¶</a></p>
+          <p id="appendix-A-3.2.1">``65001:1000:2'' (ROA-Strict, but only for prefixes with maxLength constraints, a future possible assignment)<a href="#appendix-A-3.2.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="appendix-A-3.3">
-          <p id="appendix-A-3.3.1"><code>65001:1002:1</code> (hypothetical new Action-ID for a future policy, e.g., “AS-Cones Strict”)<a href="#appendix-A-3.3.1" class="pilcrow">¶</a></p>
+          <p id="appendix-A-3.3.1"><code>65001:1002:1'' (hypothetical new Action-ID for a future policy, e.g.,</code>AS-Cones Strict'')<a href="#appendix-A-3.3.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
 <p id="appendix-A-4">The Action-ID and Parameter range is managed through IANA for orderly growth as the community adopts richer security policies.<a href="#appendix-A-4" class="pilcrow">¶</a></p>
@@ -1649,7 +1659,7 @@ decisions.<a href="#section-5.5-3" class="pilcrow">¶</a></p>
         </h3>
 <p id="appendix-B.1-1">RPKI-based mechanisms such as ROA and ASPA provide cryptographic or registry-backed validation outcomes for routing information. These mechanisms answer the question of whether a route is consistent with registered authorization data.<a href="#appendix-B.1-1" class="pilcrow">¶</a></p>
 <p id="appendix-B.1-2">The communities defined in this document do not provide validation and do not alter validation outcomes. They do not indicate that a route is valid, invalid, or authorized. Instead, they allow an Origin AS to express its operational expectations regarding how ambiguous validation outcomes (e.g., NotFound or Unknown) may be handled by downstream ASes.<a href="#appendix-B.1-2" class="pilcrow">¶</a></p>
-<p id="appendix-B.1-3">This mechanism is therefore complementary to RPKI and ASPA. It operates strictly at the policy signaling layer and does not export validation state, consistent with the guidance in <span>[<a href="#SIDROPS-STATE" class="cite xref">SIDROPS-STATE</a>]</span>.<a href="#appendix-B.1-3" class="pilcrow">¶</a></p>
+<p id="appendix-B.1-3">This mechanism is therefore complementary to RPKI and ASPA. It operates strictly at the policy signaling layer and does not export validation state, consistent with the guidance in <span>[<a href="#AVOID-RPKI-STATE-IN-BGP" class="cite xref">AVOID-RPKI-STATE-IN-BGP</a>]</span>.<a href="#appendix-B.1-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="relationship-to-bgpsec">
@@ -1692,14 +1702,13 @@ decisions.<a href="#section-5.5-3" class="pilcrow">¶</a></p>
             <p id="appendix-B.5-2.1.1">This document does not export validation state;<a href="#appendix-B.5-2.1.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="appendix-B.5-2.2">
-            <p id="appendix-B.5-2.2.1">This document does not assert routing correctness or authorization;<a href="#appendix-B.5-2.2.1" class="pilcrow">¶</a></p>
+            <p id="appendix-B.5-2.2.1">this document does not assert routing correctness or authorization;<a href="#appendix-B.5-2.2.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="appendix-B.5-2.3">
-            <p id="appendix-B.5-2.3.1">This document does not define forwarding or traffic engineering
-behavior;<a href="#appendix-B.5-2.3.1" class="pilcrow">¶</a></p>
+            <p id="appendix-B.5-2.3.1">this document does not define forwarding or traffic engineering behavior;<a href="#appendix-B.5-2.3.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="appendix-B.5-2.4">
-            <p id="appendix-B.5-2.4.1">This document does not mandate filtering or rejection behavior.<a href="#appendix-B.5-2.4.1" class="pilcrow">¶</a></p>
+            <p id="appendix-B.5-2.4.1">this document does not mandate filtering or rejection behavior.<a href="#appendix-B.5-2.4.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 <p id="appendix-B.5-3">The mechanism is limited to expressing origin-declared security policy intent and is designed to coexist with existing routing security and policy mechanisms without semantic conflict.<a href="#appendix-B.5-3" class="pilcrow">¶</a></p>
