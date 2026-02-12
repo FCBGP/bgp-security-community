@@ -1313,7 +1313,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
 "<span class="bcp14">MAY</span>", and "<span class="bcp14">OPTIONAL</span>" in this document are to be interpreted as
 described in BCP 14 <span>[<a href="#RFC2119" class="cite xref">RFC2119</a>]</span> <span>[<a href="#RFC8174" class="cite xref">RFC8174</a>]</span> when, and only when, they
 appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶</a></p>
-<span class="break"></span><dl class="dlParallel" id="section-2-2">
+<span class="break"></span><dl class="dlNewline" id="section-2-2">
         <dt id="section-2-2.1">Strict:</dt>
         <dd style="margin-left: 1.5em" id="section-2-2.2">
           <p id="section-2-2.2.1">In this document, the term "Strict" as used in community names (e.g., "ROA-Strict") refers solely to the Origin AS's stated policy preference regarding the handling of ambiguous validation outcomes. It does not imply any mandated filtering, dropping, or preference change by downstream ASes, and it <span class="bcp14">MUST NOT</span> be interpreted as a remote instruction to suppress routes.<a href="#section-2-2.2.1" class="pilcrow">¶</a></p>
@@ -1533,14 +1533,18 @@ decisions.<a href="#section-5.5-3" class="pilcrow">¶</a></p>
 <p id="section-6.1-2">IANA is requested to create a sub-registry "BGP Security Policy Action IDs" under the "BGP Large Communities" registry.<a href="#section-6.1-2" class="pilcrow">¶</a></p>
 <p id="section-6.1-3">The format of these communities are "Global-Administrator:Action-ID:Parameter". The Global Administrator <span class="bcp14">MUST</span> be the ASN of the Origin AS.<a href="#section-6.1-3" class="pilcrow">¶</a></p>
 <p id="section-6.1-4">The "Strict" qualifier expresses only an origin-declared preference and does not define any required downstream behavior.<a href="#section-6.1-4" class="pilcrow">¶</a></p>
-<p id="section-6.1-5">Action ID | Name        | Policy Intent Description
+<div class="alignLeft art-text artwork" id="section-6.1-5">
+<pre>
+  Action ID | Name        | Policy Intent Description
   ---------------------------------------------------
   1000      | ROA-Strict  | Origin expresses a preference for strict handling of
             |             | routes when RPKI validation results are Invalid or
             |             | NotFound.
   1001      | ASPA-Strict | Origin expresses a preference for strict handling of
             |             | routes when ASPA validation results are Invalid or
-            |             | Unknown.<a href="#section-6.1-5" class="pilcrow">¶</a></p>
+            |             | Unknown.
+</pre><a href="#section-6.1-5" class="pilcrow">¶</a>
+</div>
 </section>
 </div>
 <div id="standard-community-mapping">
