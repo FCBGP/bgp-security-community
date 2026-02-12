@@ -1,0 +1,111 @@
+{
+  "magic": "E!vIA5L86J2I",
+  "timestamp": "2026-02-12T02:06:17.095509+00:00",
+  "repo": "FCBGP/bgp-security-community",
+  "labels": [
+    {
+      "name": "bug",
+      "description": "Something isn't working",
+      "color": "d73a4a"
+    },
+    {
+      "name": "documentation",
+      "description": "Improvements or additions to documentation",
+      "color": "0075ca"
+    },
+    {
+      "name": "duplicate",
+      "description": "This issue or pull request already exists",
+      "color": "cfd3d7"
+    },
+    {
+      "name": "enhancement",
+      "description": "New feature or request",
+      "color": "a2eeef"
+    },
+    {
+      "name": "good first issue",
+      "description": "Good for newcomers",
+      "color": "7057ff"
+    },
+    {
+      "name": "help wanted",
+      "description": "Extra attention is needed",
+      "color": "008672"
+    },
+    {
+      "name": "invalid",
+      "description": "This doesn't seem right",
+      "color": "e4e669"
+    },
+    {
+      "name": "question",
+      "description": "Further information is requested",
+      "color": "d876e3"
+    },
+    {
+      "name": "wontfix",
+      "description": "This will not be worked on",
+      "color": "ffffff"
+    }
+  ],
+  "issues": [],
+  "pulls": [
+    {
+      "number": 1,
+      "id": "PR_kwDORJ6vis7CSKIF",
+      "title": "publish: Version 00",
+      "url": "https://github.com/FCBGP/bgp-security-community/pull/1",
+      "state": "MERGED",
+      "author": "BasilGuo",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "BGP Security Policy Community\r\n- ROA-Strict\r\n- ASPA-Strict",
+      "createdAt": "2026-02-08T10:06:50Z",
+      "updatedAt": "2026-02-08T10:07:45Z",
+      "baseRepository": "FCBGP/bgp-security-community",
+      "baseRefName": "main",
+      "baseRefOid": "ad8d188946fc2ea4f9e11a04647161d73eb5cb5d",
+      "headRepository": "FCBGP/bgp-security-community",
+      "headRefName": "version-00",
+      "headRefOid": "d1d6a8853ab41e9b4be98042de6ae3d454c25d17",
+      "closedAt": "2026-02-08T10:07:45Z",
+      "mergedAt": "2026-02-08T10:07:45Z",
+      "mergedBy": "BasilGuo",
+      "mergeCommit": {
+        "oid": "5f4442ca5bc2d138fb87ff166ce385531a00b843"
+      },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 2,
+      "id": "PR_kwDORJ6vis7DKCjB",
+      "title": "publish Version 00",
+      "url": "https://github.com/FCBGP/bgp-security-community/pull/2",
+      "state": "MERGED",
+      "author": "BasilGuo",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2026-02-12T02:02:32Z",
+      "updatedAt": "2026-02-12T02:04:48Z",
+      "baseRepository": "FCBGP/bgp-security-community",
+      "baseRefName": "main",
+      "baseRefOid": "5f4442ca5bc2d138fb87ff166ce385531a00b843",
+      "headRepository": "FCBGP/bgp-security-community",
+      "headRefName": "version-00",
+      "headRefOid": "c6fae818097ceb9107ed2213b7fe5d2bec4d44fa",
+      "closedAt": "2026-02-12T02:04:48Z",
+      "mergedAt": "2026-02-12T02:04:48Z",
+      "mergedBy": "BasilGuo",
+      "mergeCommit": {
+        "oid": "c47be6903c0d4b6f460c3e21653d84471bbada57"
+      },
+      "comments": [],
+      "reviews": []
+    }
+  ]
+}
