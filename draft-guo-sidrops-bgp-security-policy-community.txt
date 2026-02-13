@@ -5,10 +5,10 @@
 Secure Inter-Domain Routing                                       Y. Guo
 Internet-Draft                                   Zhongguancun Laboratory
 Intended status: Informational                                     K. Xu
-Expires: 16 August 2026                              Tsinghua University
+Expires: 17 August 2026                              Tsinghua University
                                                                  X. Wang
                                                Capital Normal University
-                                                        12 February 2026
+                                                        13 February 2026
 
 
        Using BGP Community for Inter-AS Security Policy Signaling
@@ -66,7 +66,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 16 August 2026.
+   This Internet-Draft will expire on 17 August 2026.
 
 Copyright Notice
 
@@ -547,9 +547,9 @@ Table of Contents
               Snijders, J., Fiebig, T., and M. Stucchi, "Guidance to
               Avoid Carrying RPKI Validation States in Transitive BGP
               Path Attributes", Work in Progress, Internet-Draft, draft-
-              ietf-sidrops-avoid-rpki-state-in-bgp-03, 26 January 2026,
+              ietf-sidrops-avoid-rpki-state-in-bgp-04, 12 February 2026,
               <https://datatracker.ietf.org/doc/html/draft-ietf-sidrops-
-              avoid-rpki-state-in-bgp-03>.
+              avoid-rpki-state-in-bgp-04>.
 
    [RFC6480]  Lepinski, M. and S. Kent, "An Infrastructure to Support
               Secure Internet Routing", RFC 6480, DOI 10.17487/RFC6480,
