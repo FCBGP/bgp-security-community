@@ -1,0 +1,1843 @@
+<!DOCTYPE html>
+<html lang="en" class="Internet-Draft">
+<head>
+<meta charset="utf-8">
+<meta content="Common,Latin" name="scripts">
+<meta content="initial-scale=1.0" name="viewport">
+<title>BGP Communities for Security Policy Intent</title>
+<meta content="Yangfei Guo" name="author">
+<meta content="Ke Xu" name="author">
+<meta content="Xiaoliang Wang" name="author">
+<meta content='
+       This document specifies a set of standardized BGP community to signal inter-AS routing security policy intent. The initial focus is on RPKI-based Route Origin Validation (ROV) using ROAs      . ROV produces validation outcomes such as "Valid", "Invalid", and "NotFound", but the operational treatment of "NotFound" and similar ambiguous cases is entirely a matter of local policy and often differs across networks. 
+       This document defines transitive community that allows an Origin AS to explicitly express its security policy expectations regarding how its own originated routes  SHOULD  be treated when downstream Autonomous Systems (ASes) perform ROA-based origin validation. A typical example is an Origin AS indicating a preference for strict handling of ambiguous validation outcomes (e.g., NotFound) for its prefixes. 
+       Unlike validation states, these community does not assert correctness, authorization, or RPKI deployment status, which is confront to  . Instead, they communicate origin-declared policy intent to all downstream ASes, enabling them to correlate this intent with locally derived validation results. By enabling explicit signaling of security expectations without exporting validation state, this mechanism allows downstream ASes to make more informed policy decisions while reducing the risk of accidental outages caused by misalignment between origin expectations and downstream local policies. 
+       The mechanism is orthogonal to existing routing security validation technologies and does not alter their semantics or deployment models. 
+    ' name="description">
+<meta content="xml2rfc 3.31.0" name="generator">
+<meta content="BGP Community" name="keyword">
+<meta content="Routing Security" name="keyword">
+<meta content="draft-guo-idr-bgp-security-policy-community-latest" name="ietf.draft">
+<!-- Generator version information:
+  xml2rfc 3.31.0
+    Python 3.12.12
+    ConfigArgParse 1.7
+    google-i18n-address 3.1.1
+    intervaltree 3.2.1
+    Jinja2 3.1.6
+    lxml 6.0.2
+    platformdirs 4.5.1
+    pycountry 24.6.1
+    PyYAML 6.0.3
+    requests 2.32.5
+    wcwidth 0.3.0
+-->
+<link href="draft-guo-idr-bgp-security-policy-community.xml" rel="alternate" type="application/rfc+xml">
+<link href="#copyright" rel="license">
+<style type="text/css">@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Lora SemiBold'), local('Lora-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-semibold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+}
+
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-greek.woff2') format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-greek.woff2') format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  color-scheme: light dark;
+  --background-color: #fff;
+  --text-color: #222;
+  --title-color: #191919;
+  --link-color: #2a6496;
+  --highlight-color: #f9f9f9;
+  --line-color: #eee;
+  --pilcrow-weak: #ddd;
+  --pilcrow-strong: #bbb;
+  --small-font-size: 14.5px;
+  --font-mono: 'Oxygen Mono', monospace;
+  --font-title: "Sofia Sans Semi Condensed", sans-serif;
+  scrollbar-color: #bbb #eee;
+}
+body {
+  max-width: 600px;
+  margin: 75px auto;
+  padding: 0 5px;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  font: 16px/22px "Lora", serif;
+  scroll-behavior: smooth;
+}
+
+.ears {
+  display: none;
+}
+
+/* headings */
+section {
+  clear: both;
+}
+.section-number {
+  padding-right: 0.5em;
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-title);
+  font-weight: 680;
+  margin: 0.8em 0 0.3em;
+  font-size-adjust: 0.5;
+  color: var(--title-color);
+}
+h1#title {
+  font-size: 32px;
+  line-height: 40px;
+  clear: both;
+}
+h1#title, h1#rfcnum {
+  margin: 1.5em 0 0.2em;
+}
+h1#rfcnum + h1#title {
+  margin: 0.2em 0;
+}
+
+h1, h2, h3 {
+  font-size: 22px;
+  line-height: 27px;
+}
+h4, h5, h6 {
+  font-size: 20px;
+  line-height: 24px;
+}
+
+/* general structure */
+.author {
+  padding-bottom: 0.3em;
+  vertical-align: top;
+}
+#abstract+p {
+  font-size: 18px;
+  line-height: 24px;
+}
+#abstract+p code, #abstract+p samp, #abstract+p tt {
+  font-size: 16px;
+  line-height: 0;
+}
+
+p {
+  padding: 0;
+  margin: 0.5em 0;
+  text-align: left;
+}
+div {
+  margin: 0;
+}
+.alignRight.art-text {
+  background-color: var(--highlight-color);
+  border: 1px solid var(--line-color);
+  border-radius: 3px;
+  padding: 0.5em 1em 0;
+  margin-bottom: 0.5em;
+}
+.alignRight.art-text pre {
+  padding: 0;
+  width: auto;
+}
+.alignRight {
+  margin: 1em 0;
+}
+.alignRight > *:first-child {
+  border: none;
+  margin: 0;
+  float: right;
+  clear: both;
+}
+.alignRight > *:nth-child(2) {
+  clear: both;
+  display: block;
+  border: none;
+}
+svg {
+  display: block;
+}
+/* font-family isn't space-separated, but =~ will have to do */
+svg[font-family~="monospace" i], svg [font-family~="monospace" i] {
+  font-family: var(--font-mono);
+}
+.alignCenter.art-text {
+  background-color: var(--highlight-color);
+  border: 1px solid var(--line-color);
+  border-radius: 3px;
+  padding: 0.5em 1em 0;
+  margin-bottom: 0.5em;
+}
+.alignCenter.art-text pre {
+  padding: 0;
+  width: auto;
+}
+.alignCenter {
+  margin: 1em 0;
+}
+.alignCenter > *:first-child {
+  border: none;
+  /* this isn't optimal, but it's an existence proof.  PrinceXML doesn't
+     support flexbox yet.
+  */
+  display: table;
+  margin: 0 auto;
+}
+
+/* lists */
+ol, ul {
+  padding: 0;
+  margin: 0 0 0.5em 2em;
+  & :is(ol, ul) {
+    margin-left: 1em;
+  }
+}
+li {
+  margin: 0 0 0.25em 0;
+}
+ul.empty, .ulEmpty {
+  list-style-type: none;
+  & li {
+    margin-top: 0.5em;
+  }
+}
+:is(ul, ol).compact, .ulCompact, .olCompact {
+  margin: 0 0 0 2em;
+  & li {
+    margin: 0;
+    & :first-child { margin-top: 0; }
+    & :last-child { margin-bottom: 0; }
+  }
+}
+
+/* definition lists */
+dl {
+  clear: left;
+  --indent: 3ch;
+  /* --indent: attr(indent ch); not supported in any browser, but we can dream */
+  &.olPercent {
+    --indent: 5ch;
+    & > dt {
+      min-width: calc(var(--indent) - 2ch);
+    }
+  }
+  &.olPercent > dt {
+    float: none;
+  }
+
+  dl > dd > & {
+    margin-top: 0.5em;
+    margin-bottom: 0;
+  }
+}
+dl:not(.dlNewline) > dt {
+  float: left;
+  margin-right: 2ch;
+  min-width: 8ch;
+}
+dl > dd {
+  margin-bottom: .8em;
+  margin-left: var(--indent) !important; /* stupid element overrides */
+  min-height: 2ex;
+}
+:is(dl.compact, .dlCompact) > dd {
+  margin-bottom: 0;
+  & > :is(:first-child, .break:first-child + *) {
+    margin-top: 0;
+  }
+  & > :is(:last-child) {
+    margin-bottom: 0;
+  }
+}
+:is(dd, span).break {
+  display: none;
+}
+
+/* links */
+a, a[href].selfRef:hover {
+  text-decoration: none;
+}
+a[href] {
+  color: var(--link-color);
+}
+a[href].selfRef, .iref + a[href].internal {
+  color: var(--text-color);
+}
+a[href]:hover {
+  text-decoration: underline;
+}
+a[href].selfRef:hover {
+  background-color: var(--highlight-color);
+}
+a.xref:is(.cite, .auto), :is(#status-of-memo, #copyright) a {
+  white-space: nowrap;
+}
+
+/* Figures */
+tt, code, pre {
+  background-color: var(--highlight-color);
+  font: 14px/22px var(--font-mono);
+}
+tt, code {
+  /* changing the font for inline elements leads to different ascender
+     and descender heights; as we want to retain baseline alignment,
+     remove leading to avoid altering the final height of lines
+     note: this fails if these blocks take an entire line,
+     a different solution would be great */
+  line-height: 0;
+}
+:is(h1, h2, h3, h4, h5, h6) :is(tt, code) {
+  font-size: 84%;
+}
+pre {
+  border: 1px solid var(--line-color);
+  font-size: 13.5px;
+  line-height: 16px;
+  letter-spacing: -0.2px;
+  margin: 5px;
+  padding: 5px;
+}
+img {
+  max-width: 100%;
+}
+figure {
+  margin: 0.5em 0;
+  padding: 0;
+}
+figure blockquote {
+  margin: 0.8em 0.4em 0.4em;
+}
+figcaption, caption {
+  font-style: italic;
+  margin: 0.5em 1.5em;
+  text-align: left;
+  caption-side: bottom;
+}
+@media screen {
+  /* Auto-collapse boilerplate. */
+  :is(#status-of-memo, #copyright) p {
+    margin: -2px 0;
+    max-height: 0;
+    transition: max-height 2s ease, margin 0.5s ease 0.5s;
+    overflow: hidden;
+  }
+  :is(#status-of-memo, #copyright):hover p,
+  :is(#status-of-memo, #copyright) h2:target ~ p {
+    margin: 0.5em 0;
+    max-height: 500px;
+    overflow: auto;
+  }
+  pre, svg {
+    display: inline-block;
+    /* In the horizontal direction, sometimes people make over-sized figures.
+       Scrollbars for those is therefore necessary: auto adds them as necessary..
+       In the vertical direction, the line-height can combine with the font
+       asender/descender height to produce scrollbars: hidden avoids that. */
+    overflow: auto hidden;
+  }
+  pre {
+    max-width: 100%;
+    width: calc(100% - 22px - 1em);
+  }
+  svg {
+    max-width: calc(100% - 22px - 1em);
+  }
+  figure pre {
+    display: block;
+    width: calc(100% - 25px);
+  }
+  :is(pre, svg) + .pilcrow {
+    display: inline-block;
+    vertical-align: text-bottom;
+    padding-bottom: 8px;
+  }
+}
+
+/* aside, blockquote */
+aside, blockquote {
+  margin-left: 0;
+  padding: 0 2em;
+  font-style: italic;
+}
+blockquote {
+  margin: 1em 0;
+  border-left: 2px var(--pilcrow-strong) solid;
+}
+cite {
+  display: block;
+  text-align: right;
+  font-style: italic;
+}
+
+/* tables */
+table {
+  width: auto;
+  max-width: 100%;
+  margin: 0 0 1em;
+  border-collapse: collapse;
+}
+table.right {
+  margin-left: auto;
+}
+table.center {
+  margin-left: auto;
+  margin-right: auto;
+}
+table.left {
+  margin-right: auto;
+}
+table .text-left {
+  text-align: left;
+}
+table .text-center {
+  text-align: center;
+}
+table .text-right {
+  text-align: right;
+}
+
+thead, tbody {
+  border: 1px solid var(--line-color);
+}
+th, td {
+  text-align: left;
+  vertical-align: top;
+  padding: 5px 10px;
+}
+th {
+  background-color: var(--line-color);
+}
+:is(tr:nth-child(2n), thead+tbody > tr:nth-child(2n+1)) > td {
+  background-color: var(--background-color);
+}
+:is(tr:nth-child(2n+1), thead+tbody > tr:nth-child(2n)) > td {
+  background-color: var(--highlight-color);
+}
+table caption {
+  margin: 0;
+  padding: 3px 0 3px 1em;
+}
+table p {
+  margin: 0;
+}
+
+/* pilcrow */
+a.pilcrow {
+  margin-left: 3px;
+  opacity: 0.2;
+  user-select: none;
+  &[href] {
+    color: var(--pilcrow-weak);
+    &:hover { text-decoration: none; }
+  }
+}
+@media not print {
+  :hover > a.pilcrow, a.pilcrow:focus {
+    opacity: 1;
+  }
+  a.pilcrow[href]:hover {
+    color: var(--pilcrow-strong);
+    background-color: transparent;
+  }
+}
+@media print {
+  a.pilcrow {
+    display: none;
+  }
+}
+
+/* misc */
+hr {
+  border: 0;
+  border-top: 1px solid var(--line-color);
+}
+.bcp14 {
+  font-variant: small-caps;
+  font-weight: 600;
+  font-size: var(--small-font-size);
+}
+.role {
+  font-variant: all-small-caps;
+}
+sub, sup {
+  line-height: 1;
+  font-size: 80%;
+}
+
+/* info block */
+#identifiers {
+  margin: 0;
+  font-size: var(--small-font-size);
+  line-height: 18px;
+  --identifier-width: 15ch;
+  & dt {
+    width: var(--identifier-width);
+    min-width: var(--identifier-width);
+    clear: left;
+    float: left;
+    text-align: right;
+    margin-right: 1ch;
+  }
+  & dd {
+    margin: 0;
+    margin-left: calc(1em + var(--identifier-width)) !important;
+    min-width: 5em;
+  }
+  & .authors {
+    & .author {
+      display: inline-block;
+      margin-right: 1.5em;
+    }
+    & .org {
+      font-style: italic;
+    }
+  }
+}
+
+/* The prepared/rendered info at the very bottom of the page */
+.docInfo {
+  color: #999;
+  font-size: 0.9em;
+  font-style: italic;
+  margin-top: 2em;
+}
+.docInfo .prepared {
+  float: right;
+}
+
+/* table of contents */
+#toc {
+  padding: 0.75em 0 2em 0;
+  margin-bottom: 1em;
+
+  & nav {
+    & ul {
+      margin: 0 0.5em 0 0;
+      padding: 0;
+      list-style: none;
+    }
+    & li {
+      line-height: 1.3em;
+      margin: 2px 0;
+      padding-left: 1.2em;
+      text-indent: -1.2em;
+    }
+  }
+  & a.xref {
+    white-space: normal;
+  }
+}
+
+.references {
+  & > dt {
+    text-align: right;
+    font-weight: bold;
+    min-width: 10ch;
+    margin-right: 1.5ch;
+    &:target::before {
+      content: "⇒";
+      margin: 0 10px 0 -25px;
+    }
+  }
+  & > dd {
+    margin-left: 12ch !important;
+    overflow: visible;
+    & .refInstance {
+      margin-bottom: 0.8em;
+    }
+    & .ascii {
+      margin-bottom: 0.25em;
+    }
+  }
+}
+
+#rfc\.index\.index + ul {
+  margin-left: 0;
+}
+
+/* authors */
+address.vcard {
+  font-style: normal;
+  max-width: 20em;
+  margin: 1em auto 1em 0;
+
+  & .nameRole {
+    font-weight: 700;
+    margin-left: 0;
+  }
+  & .label {
+    margin: 0.5em 0;
+  }
+  & .type {
+    display: none;
+  }
+  & .alternative-contact {
+    margin: 0.5em 0 0.25em 0;
+  }
+  & .non-ascii {
+    margin: 0 0 0 2em;
+  }
+  & div.left {
+    text-align: left;
+  }
+  & div.right {
+    text-align: right;
+  }
+}
+
+hr.addr {
+  border-top: 1px dashed;
+  margin: 0;
+  color: #ddd;
+  max-width: calc(100% - 16px);
+}
+@media (min-width: 500px) {
+  #authors-addresses > section {
+    column-count: 2;
+    column-gap: 20px;
+  }
+  #authors-addresses > section > h2 {
+    column-span: all;
+  }
+  /* hack for break-inside: avoid-column */
+  #authors-addresses address {
+    display: inline-block;
+    break-inside: avoid-column;
+  }
+}
+
+/* Comments */
+.rfcEditorRemove p:first-of-type {
+  font-style: italic;
+}
+.cref {
+  background-color: rgba(249, 232, 105, 0.3);
+  padding: 2px 4px;
+}
+.crefSource {
+  font-style: italic;
+}
+
+@media screen {
+  #toc nav {
+    font-family: var(--font-title);
+    font-weight: 360;
+    & > ul { margin-bottom: 2em; }
+    & ul {
+      margin: 0 0 0 4px;
+      & :is(p, li) {
+        margin: 2px 0;
+      }
+    }
+  }
+  #toc a.toplink {
+    float: right;
+  }
+}
+@media not screen {
+  #toc a.toplink {
+    display: none;
+  }
+}
+
+
+/* TOC layout for smaller screens */
+@media screen and (max-width: 929px) {
+  #toc {
+    position: fixed;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    padding: 1px 0 0 0;
+    margin: 0;
+    border-bottom: 1px solid #ccc;
+    opacity: 0.6;
+  }
+  #toc h2 {
+    margin: 0;
+    padding: 2px 0 2px 6px;
+    padding-right: 1em;
+    font-size: 18px;
+    line-height: 24px;
+    min-width: 190px;
+    text-align: right;
+    background-color: #444;
+    color: white;
+    cursor: pointer;
+    &::before { /* css hamburger */
+      float: right;
+      position: relative;
+      width: 1em;
+      height: 1px;
+      left: -164px;
+      margin: 8px 0 0 0;
+      background: white none repeat scroll 0 0;
+      box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
+      content: "";
+    }
+  }
+  #toc nav {
+    display: none;
+    background-color: var(--background-color);
+    padding: 0.5em 1em 1em;
+    overflow: auto;
+    overscroll-behavior: contain;
+    height: calc(100vh - 48px);
+    border-left: 1px solid #ddd;
+  }
+  #toc.active {
+    opacity: 1;
+    & nav { display: block; }
+  }
+  /* Make the collapsed ToC header render white on gray also when it's a link */
+  #toc h2 a,
+  #toc h2 a:is(:link, :focus, :hover),
+  #toc a.toplink,
+  #toc a.toplink:hover {
+    color: white;
+    background-color: #444;
+    text-decoration: none;
+  }
+  #toc a.toplink {
+    margin: 2px 0.5em 0;
+  }
+}
+
+/* TOC layout for wide screens */
+@media screen and (min-width: 930px) {
+  body {
+    padding-right: 360px;
+    padding-right: calc(min(180px + 20%, 500px));
+  }
+  #toc {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    right: calc(50vw - 480px);
+    width: 312px;
+    margin: 0;
+    padding: 0;
+    z-index: 1;
+  }
+  #toc h2 {
+    margin: 0;
+    padding: 0.25em 1em 1em 0;
+  }
+  #toc nav {
+    display: block;
+    height: calc(90vh - 84px);
+    bottom: 0;
+    padding: 0.5em 0 2em;
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+  img { /* future proofing */
+    max-width: 100%;
+    height: auto;
+  }
+  #toc a.toplink {
+    margin: 8px 0.5em 0;
+  }
+}
+
+/* pagination */
+@media print {
+  body {
+    width: 100%;
+  }
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+  #n-copyright-notice {
+    border-bottom: none;
+  }
+  #toc, #n-introduction {
+    page-break-before: always;
+  }
+  #toc {
+    border-top: none;
+    padding-top: 0;
+  }
+  figure, pre, .vcard {
+    page-break-inside: avoid;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+  :is(h2, h3, h4, h5, h6)+*, dd {
+    page-break-before: avoid;
+  }
+  pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 10pt;
+  }
+  table {
+    border: 1px solid #ddd;
+  }
+  td {
+    border-top: 1px solid #ddd;
+  }
+}
+
+@page :first {
+  padding-top: 0;
+  @top-left {
+    content: normal;
+    border: none;
+  }
+  @top-center {
+    content: normal;
+    border: none;
+  }
+  @top-right {
+    content: normal;
+    border: none;
+  }
+}
+
+@page {
+  size: A4;
+  margin-bottom: 45mm;
+  padding-top: 20px;
+}
+
+/* Dark mode. */
+@media (prefers-color-scheme: dark) {
+:root {
+  --background-color: #121212;
+  --text-color: #f0f0f0;
+  --title-color: #fff;
+  --link-color: #4da4f0;
+  --highlight-color: #282828;
+  --line-color: #444;
+  --pilcrow-weak: #444;
+  --pilcrow-strong: #666;
+  scrollbar-color: #777 #333;
+}
+}
+
+/* SVG Trick: a prefix match works because only black and white are allowed */
+svg :is([stroke="black"], [stroke^="#000"]) {
+  stroke: var(--text-color);
+}
+svg :is([stroke="white"], [stroke^="#fff"]) {
+  stroke: var(--background-color);
+}
+svg :is([fill="black"], [fill^="#000"], :not([fill])) {
+  fill: var(--text-color);
+}
+svg :is([fill="white"], [fill^="#fff"]) {
+  fill: var(--background-color);
+}
+</style>
+
+</head>
+<body class="xml2rfc">
+<table class="ears">
+<thead><tr>
+<td class="left">Internet-Draft</td>
+<td class="center">BGP Security Policy Community</td>
+<td class="right">February 2026</td>
+</tr></thead>
+<tfoot><tr>
+<td class="left">Guo, et al.</td>
+<td class="center">Expires 17 August 2026</td>
+<td class="right">[Page]</td>
+</tr></tfoot>
+</table>
+<div id="external-metadata" class="document-information"></div>
+<div id="internal-metadata" class="document-information">
+<dl id="identifiers">
+<dt class="label-workgroup">Workgroup:</dt>
+<dd class="workgroup">Inter-Domain Routing</dd>
+<dt class="label-internet-draft">Internet-Draft:</dt>
+<dd class="internet-draft">draft-guo-idr-bgp-security-policy-community-latest</dd>
+<dt class="label-published">Published:</dt>
+<dd class="published">
+<time datetime="2026-02-13" class="published">13 February 2026</time>
+    </dd>
+<dt class="label-intended-status">Intended Status:</dt>
+<dd class="intended-status">Informational</dd>
+<dt class="label-expires">Expires:</dt>
+<dd class="expires"><time datetime="2026-08-17">17 August 2026</time></dd>
+<dt class="label-authors">Authors:</dt>
+<dd class="authors">
+<div class="author">
+      <div class="author-name">Y. Guo</div>
+<div class="org">Zhongguancun Laboratory</div>
+</div>
+<div class="author">
+      <div class="author-name">K. Xu</div>
+<div class="org">Tsinghua University</div>
+</div>
+<div class="author">
+      <div class="author-name">X. Wang</div>
+<div class="org">Capital Normal University</div>
+</div>
+</dd>
+</dl>
+</div>
+<h1 id="title">BGP Communities for Security Policy Intent</h1>
+<section id="section-abstract">
+      <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
+<p id="section-abstract-1">This document specifies a set of standardized BGP community to signal inter-AS routing security policy intent. The initial focus is on RPKI-based Route Origin Validation (ROV) using ROAs <span>[<a href="#RFC6482" class="cite xref">RFC6482</a>]</span> <span>[<a href="#RFC6811" class="cite xref">RFC6811</a>]</span> <span>[<a href="#RFC9582" class="cite xref">RFC9582</a>]</span>. ROV produces validation outcomes such as "Valid", "Invalid", and "NotFound", but the operational treatment of "NotFound" and similar ambiguous cases is entirely a matter of local policy and often differs across networks.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+<p id="section-abstract-2">This document defines transitive community that allows an Origin AS to explicitly express its security policy expectations regarding how its own originated routes <span class="bcp14">SHOULD</span> be treated when downstream Autonomous Systems (ASes) perform ROA-based origin validation. A typical example is an Origin AS indicating a preference for strict handling of ambiguous validation outcomes (e.g., NotFound) for its prefixes.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
+<p id="section-abstract-3">Unlike validation states, these community does not assert correctness, authorization, or RPKI deployment status, which is confront to <span>[<a href="#AVOID-RPKI-STATE-IN-BGP" class="cite xref">AVOID-RPKI-STATE-IN-BGP</a>]</span>. Instead, they communicate origin-declared policy intent to all downstream ASes, enabling them to correlate this intent with locally derived validation results. By enabling explicit signaling of security expectations without exporting validation state, this mechanism allows downstream ASes to make more informed policy decisions while reducing the risk of accidental outages caused by misalignment between origin expectations and downstream local policies.<a href="#section-abstract-3" class="pilcrow">¶</a></p>
+<p id="section-abstract-4">The mechanism is orthogonal to existing routing security validation technologies and does not alter their semantics or deployment models.<a href="#section-abstract-4" class="pilcrow">¶</a></p>
+</section>
+<div id="status-of-memo">
+<section id="section-boilerplate.1">
+        <h2 id="name-status-of-this-memo">
+<a href="#name-status-of-this-memo" class="section-name selfRef">Status of This Memo</a>
+        </h2>
+<p id="section-boilerplate.1-1">
+        This Internet-Draft is submitted in full conformance with the
+        provisions of BCP 78 and BCP 79.<a href="#section-boilerplate.1-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-2">
+        Internet-Drafts are working documents of the Internet Engineering Task
+        Force (IETF). Note that other groups may also distribute working
+        documents as Internet-Drafts. The list of current Internet-Drafts is
+        at <span><a href="https://datatracker.ietf.org/drafts/current/">https://datatracker.ietf.org/drafts/current/</a></span>.<a href="#section-boilerplate.1-2" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-3">
+        Internet-Drafts are draft documents valid for a maximum of six months
+        and may be updated, replaced, or obsoleted by other documents at any
+        time. It is inappropriate to use Internet-Drafts as reference
+        material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-4">
+        This Internet-Draft will expire on 17 August 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="copyright">
+<section id="section-boilerplate.2">
+        <h2 id="name-copyright-notice">
+<a href="#name-copyright-notice" class="section-name selfRef">Copyright Notice</a>
+        </h2>
+<p id="section-boilerplate.2-1">
+            Copyright (c) 2026 IETF Trust and the persons identified as the
+            document authors. All rights reserved.<a href="#section-boilerplate.2-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<span><a href="https://trustee.ietf.org/license-info">https://trustee.ietf.org/license-info</a></span>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.<a href="#section-boilerplate.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="toc">
+<section id="section-toc.1">
+        <a href="#" onclick="scroll(0,0)" class="toplink">▲</a><h2 id="name-table-of-contents">
+<a href="#name-table-of-contents" class="section-name selfRef">Table of Contents</a>
+        </h2>
+<nav class="toc"><ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1">
+            <p id="section-toc.1-1.1.1" class="keepWithNext"><a href="#section-1" class="auto internal xref">1</a>.  <a href="#name-introduction" class="internal xref">Introduction</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1.2.1">
+                <p id="section-toc.1-1.1.2.1.1" class="keepWithNext"><a href="#section-1.1" class="auto internal xref">1.1</a>.  <a href="#name-goals-and-non-goals" class="internal xref">Goals and Non-Goals</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1.2.2">
+                <p id="section-toc.1-1.1.2.2.1" class="keepWithNext"><a href="#section-1.2" class="auto internal xref">1.2</a>.  <a href="#name-conventions-and-definitions" class="internal xref">Conventions and Definitions</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2">
+            <p id="section-toc.1-1.2.1"><a href="#section-2" class="auto internal xref">2</a>.  <a href="#name-architecture-and-operations" class="internal xref">Architecture and Operations</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.1">
+                <p id="section-toc.1-1.2.2.1.1"><a href="#section-2.1" class="auto internal xref">2.1</a>.  <a href="#name-overview" class="internal xref">Overview</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.2">
+                <p id="section-toc.1-1.2.2.2.1"><a href="#section-2.2" class="auto internal xref">2.2</a>.  <a href="#name-policy-signaling-versus-val" class="internal xref">Policy Signaling Versus Validation State</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.3">
+                <p id="section-toc.1-1.2.2.3.1"><a href="#section-2.3" class="auto internal xref">2.3</a>.  <a href="#name-transitivity-considerations" class="internal xref">Transitivity Considerations</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.4">
+                <p id="section-toc.1-1.2.2.4.1"><a href="#section-2.4" class="auto internal xref">2.4</a>.  <a href="#name-origin-as-behavior" class="internal xref">Origin AS Behavior</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.5">
+                <p id="section-toc.1-1.2.2.5.1"><a href="#section-2.5" class="auto internal xref">2.5</a>.  <a href="#name-intermediate-as-behavior" class="internal xref">Intermediate AS Behavior</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.6">
+                <p id="section-toc.1-1.2.2.6.1"><a href="#section-2.6" class="auto internal xref">2.6</a>.  <a href="#name-parameter-field-extensibili" class="internal xref">Parameter Field Extensibility</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3">
+            <p id="section-toc.1-1.3.1"><a href="#section-3" class="auto internal xref">3</a>.  <a href="#name-applicability-and-deploymen" class="internal xref">Applicability and Deployment</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.1">
+                <p id="section-toc.1-1.3.2.1.1"><a href="#section-3.1" class="auto internal xref">3.1</a>.  <a href="#name-applicability-to-route-leak" class="internal xref">Applicability to Route Leak and Hijack Detection</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.2">
+                <p id="section-toc.1-1.3.2.2.1"><a href="#section-3.2" class="auto internal xref">3.2</a>.  <a href="#name-deployment-considerations" class="internal xref">Deployment Considerations</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4">
+            <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.1">
+                <p id="section-toc.1-1.4.2.1.1"><a href="#section-4.1" class="auto internal xref">4.1</a>.  <a href="#name-authenticity-and-integrity" class="internal xref">Authenticity and Integrity</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.2">
+                <p id="section-toc.1-1.4.2.2.1"><a href="#section-4.2" class="auto internal xref">4.2</a>.  <a href="#name-relationship-to-validation-" class="internal xref">Relationship to Validation Mechanisms</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.3">
+                <p id="section-toc.1-1.4.2.3.1"><a href="#section-4.3" class="auto internal xref">4.3</a>.  <a href="#name-policy-semantics-and-downst" class="internal xref">Policy Semantics and Downstream Behavior</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.4">
+                <p id="section-toc.1-1.4.2.4.1"><a href="#section-4.4" class="auto internal xref">4.4</a>.  <a href="#name-denial-of-service-and-abuse" class="internal xref">Denial-of-Service and Abuse Considerations</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.5">
+                <p id="section-toc.1-1.4.2.5.1"><a href="#section-4.5" class="auto internal xref">4.5</a>.  <a href="#name-threat-model" class="internal xref">Threat Model</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5">
+            <p id="section-toc.1-1.5.1"><a href="#section-5" class="auto internal xref">5</a>.  <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.1">
+                <p id="section-toc.1-1.5.2.1.1"><a href="#section-5.1" class="auto internal xref">5.1</a>.  <a href="#name-bgp-security-policy-action-" class="internal xref">BGP Security Policy Action IDs</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6">
+            <p id="section-toc.1-1.6.1"><a href="#section-6" class="auto internal xref">6</a>.  <a href="#name-relationship-to-existing-an" class="internal xref">Relationship to Existing and Future Mechanisms</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.1">
+                <p id="section-toc.1-1.6.2.1.1"><a href="#section-6.1" class="auto internal xref">6.1</a>.  <a href="#name-relationship-to-rpki-and-ro" class="internal xref">Relationship to RPKI and ROA</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.2">
+                <p id="section-toc.1-1.6.2.2.1"><a href="#section-6.2" class="auto internal xref">6.2</a>.  <a href="#name-relationship-to-avoid-rpki-" class="internal xref">Relationship to "Avoid RPKI State in BGP"</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.3">
+                <p id="section-toc.1-1.6.2.3.1"><a href="#section-6.3" class="auto internal xref">6.3</a>.  <a href="#name-relationship-to-bgpsec" class="internal xref">Relationship to BGPsec</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.4">
+                <p id="section-toc.1-1.6.2.4.1"><a href="#section-6.4" class="auto internal xref">6.4</a>.  <a href="#name-relationship-to-bgp-color-a" class="internal xref">Relationship to BGP Color and Color-Aware Routing</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.5">
+                <p id="section-toc.1-1.6.2.5.1"><a href="#section-6.5" class="auto internal xref">6.5</a>.  <a href="#name-relationship-to-only-to-cus" class="internal xref">Relationship to Only-To-Customer (OTC)</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.6">
+                <p id="section-toc.1-1.6.2.6.1"><a href="#section-6.6" class="auto internal xref">6.6</a>.  <a href="#name-relationship-to-potential-a" class="internal xref">Relationship to Potential ASPA-Based Extensions</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7">
+            <p id="section-toc.1-1.7.1"><a href="#section-7" class="auto internal xref">7</a>.  <a href="#name-references" class="internal xref">References</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.1">
+                <p id="section-toc.1-1.7.2.1.1"><a href="#section-7.1" class="auto internal xref">7.1</a>.  <a href="#name-normative-references" class="internal xref">Normative References</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.2">
+                <p id="section-toc.1-1.7.2.2.1"><a href="#section-7.2" class="auto internal xref">7.2</a>.  <a href="#name-informative-references" class="internal xref">Informative References</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8">
+            <p id="section-toc.1-1.8.1"><a href="#appendix-A" class="auto internal xref"></a><a href="#name-acknowledgments" class="internal xref">Acknowledgments</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9">
+            <p id="section-toc.1-1.9.1"><a href="#appendix-B" class="auto internal xref"></a><a href="#name-authors-addresses" class="internal xref">Authors' Addresses</a></p>
+</li>
+        </ul>
+</nav>
+</section>
+</div>
+<div id="introduction">
+<section id="section-1">
+      <h2 id="name-introduction">
+<a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
+      </h2>
+<p id="section-1-1">Inter-domain routing security mechanisms intentionally separate validation from policy. While this separation improves robustness, it also creates persistent operational ambiguity.<a href="#section-1-1" class="pilcrow">¶</a></p>
+<p id="section-1-2">Internet routing security relies on distributed validation mechanisms like RPKI ROA-based Route Origin Validation (ROV) <span>[<a href="#RFC6480" class="cite xref">RFC6480</a>]</span> <span>[<a href="#RFC6482" class="cite xref">RFC6482</a>]</span> <span>[<a href="#RFC6811" class="cite xref">RFC6811</a>]</span> <span>[<a href="#RFC9582" class="cite xref">RFC9582</a>]</span>. However, there is a functional gap between "knowing a route's validity state" and "knowing the origin's policy intent".<a href="#section-1-2" class="pilcrow">¶</a></p>
+<p id="section-1-3">These security mechanisms are typically enforced locally only. No standardized method exists for an AS to signal its security policy expectations for its originated prefixes as they propagate through the inter-domain routing system. <span>[<a href="#AVOID-RPKI-STATE-IN-BGP" class="cite xref">AVOID-RPKI-STATE-IN-BGP</a>]</span> advises against carrying actual RPKI-derived validation state in BGP, in particular using transitive attributes such as BGP Communities. This is an important safeguard, but it leaves downstream ASes with only their local validation state and no explicit information about the origin’s security policy intent.<a href="#section-1-3" class="pilcrow">¶</a></p>
+<p id="section-1-4">For example, when a Transit AS observes an RPKI "NotFound" state for a route, it cannot, based on RPKI state alone, distinguish between:<a href="#section-1-4" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-1-5.1">
+          <p id="section-1-5.1.1">an Origin AS that has intentionally not deployed ROAs (and may consider "NotFound" operationally acceptable for the time being);<a href="#section-1-5.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-1-5.2">
+          <p id="section-1-5.2.1">and an Origin AS that has deployed ROAs but is experiencing a configuration error or a hijack attempt (and may consider "NotFound" operationally undesirable or suspicious).<a href="#section-1-5.2.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+<p id="section-1-6">From the point of view of the validation algorithm, these cases all appear as "NotFound". Without additional information about the origin's expectations, downstream ASes must treat them according to their own local policies, which may or may not align with the origin's operational intent.<a href="#section-1-6" class="pilcrow">¶</a></p>
+<p id="section-1-7">By allowing the Origin AS to signal a stricter security policy intent, downstream ASes can apply different local policies to otherwise identical validation outcomes based on the origin-declared preference. This signaling does not reveal the underlying cause of a "NotFound" state, and it does not carry validation results. Instead, it exposes the origin’s desired treatment of its routes under such ambiguity (for example, that the origin prefers its routes to be handled more strictly when validation is inconclusive).<a href="#section-1-7" class="pilcrow">¶</a></p>
+<p id="section-1-8">Current mechanisms do not allow an Origin AS to express, in a standardized way:<a href="#section-1-8" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-1-9.1">
+          <p id="section-1-9.1.1">whether it prefers strict handling to be applied to ambiguous validation outcomes for its own routes;<a href="#section-1-9.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-1-9.2">
+          <p id="section-1-9.2.1">whether certain propagation behaviors are explicitly expected or operationally acceptable for its routes;<a href="#section-1-9.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-1-9.3">
+          <p id="section-1-9.3.1">and whether "NotFound" or similar outcomes are considered operationally acceptable for its routes.<a href="#section-1-9.3.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+<p id="section-1-10">As a result, downstream networks frequently face situations where routing information is technically acceptable according to their local validation policy, yet operationally unexpected from the perspective of the Origin AS. In large-scale deployments, this ambiguity may lead to:<a href="#section-1-10" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-1-11.1">
+          <p id="section-1-11.1.1">inconsistent treatment of identical prefixes;<a href="#section-1-11.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-1-11.2">
+          <p id="section-1-11.2.1">difficulty distinguishing misconfiguration from malicious behavior at an operational level.<a href="#section-1-11.2.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+<p id="section-1-12">By signaling security policy intent, an Origin AS can explicitly inform the network of its operational expectations regarding routing security for its own prefixes. For example, an Origin AS may indicate that it prefers downstream ASes to apply stricter handling for its prefixes when their local ROV results are ambiguous.<a href="#section-1-12" class="pilcrow">¶</a></p>
+<p id="section-1-13">This signaling enables downstream ASes, if they choose to honor it, to better align their local policies with the origin's expectations, while still deriving and using their own validation results locally. The mechanism defined in this document is explicitly designed to follow the guidance in <span>[<a href="#AVOID-RPKI-STATE-IN-BGP" class="cite xref">AVOID-RPKI-STATE-IN-BGP</a>]</span> by avoiding the carriage of RPKI-derived validation state in BGP and instead signaling only origin-declared policy intent.<a href="#section-1-13" class="pilcrow">¶</a></p>
+<div id="goals-and-non-goals">
+<section id="section-1.1">
+        <h3 id="name-goals-and-non-goals">
+<a href="#section-1.1" class="section-number selfRef">1.1. </a><a href="#name-goals-and-non-goals" class="section-name selfRef">Goals and Non-Goals</a>
+        </h3>
+<p id="section-1.1-1">This document is scoped to signaling origin-declared policy intent for ROA-based origin validation only. It does not attempt to define new validation mechanisms or to standardize local routing policies.<a href="#section-1.1-1" class="pilcrow">¶</a></p>
+<p id="section-1.1-2">The goal of this document is to provide a mechanism for an Origin AS to explicitly express a routing security policy intent to downstream ASes: namely, that routes originated by this AS <span class="bcp14">SHOULD</span> be subject to a stricter local policy when downstream ASes perform ROA-based origin validation.<a href="#section-1.1-2" class="pilcrow">¶</a></p>
+<p id="section-1.1-3">The community defined in this document is intended to convey only the Origin AS's intent concerning the desired treatment of its own routes. They do not:<a href="#section-1.1-3" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-1.1-4.1">
+            <p id="section-1.1-4.1.1">assert or reveal whether the Origin AS has actually deployed RPKI, ROAs, or ROV locally;<a href="#section-1.1-4.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-1.1-4.2">
+            <p id="section-1.1-4.2.1">export or encode any RPKI validation state (e.g., "Valid", "Invalid", "NotFound");<a href="#section-1.1-4.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-1.1-4.3">
+            <p id="section-1.1-4.3.1">and guarantee that downstream ASes will enforce or even interpret the signaled intent in a particular way.<a href="#section-1.1-4.3.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-1.1-5">Enforcement of any stricter policy remains entirely a local decision of each downstream AS. An Origin AS can request stricter handling via this community, but it cannot enforce that request on other ASes.<a href="#section-1.1-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="conventions-and-definitions">
+<section id="section-1.2">
+        <h3 id="name-conventions-and-definitions">
+<a href="#section-1.2" class="section-number selfRef">1.2. </a><a href="#name-conventions-and-definitions" class="section-name selfRef">Conventions and Definitions</a>
+        </h3>
+<p id="section-1.2-1">The key words "<span class="bcp14">MUST</span>", "<span class="bcp14">MUST NOT</span>", "<span class="bcp14">REQUIRED</span>", "<span class="bcp14">SHALL</span>", "<span class="bcp14">SHALL NOT</span>", "<span class="bcp14">SHOULD</span>", "<span class="bcp14">SHOULD NOT</span>", "<span class="bcp14">RECOMMENDED</span>", "<span class="bcp14">NOT RECOMMENDED</span>",
+"<span class="bcp14">MAY</span>", and "<span class="bcp14">OPTIONAL</span>" in this document are to be interpreted as
+described in BCP 14 <span>[<a href="#RFC2119" class="cite xref">RFC2119</a>]</span> <span>[<a href="#RFC8174" class="cite xref">RFC8174</a>]</span> when, and only when, they
+appear in all capitals, as shown here.<a href="#section-1.2-1" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlNewline" id="section-1.2-2">
+          <dt id="section-1.2-2.1">Strict:</dt>
+          <dd style="margin-left: 1.5em" id="section-1.2-2.2">
+            <p id="section-1.2-2.2.1">In this document, the term "Strict" as used in community names (namely, "ROA-Strict") refers solely to the Origin AS's stated policy preference regarding the handling of ambiguous or unfavorable validation outcomes for its own originated routes. It does not imply any mandated filtering, dropping, or preference change by downstream ASes, and it <span class="bcp14">MUST NOT</span> be interpreted as a remote instruction to suppress routes.<a href="#section-1.2-2.2.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-1.2-2.3">Security Policy Community:</dt>
+          <dd style="margin-left: 1.5em" id="section-1.2-2.4">
+            <p id="section-1.2-2.4.1">A BGP Large Community defined by this document to convey origin-declared routing security policy intent for the origin's own prefixes.<a href="#section-1.2-2.4.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-1.2-2.5">Validation State:</dt>
+          <dd style="margin-left: 1.5em" id="section-1.2-2.6">
+            <p id="section-1.2-2.6.1">A locally derived outcome of a security validation mechanism, such as RPKI Prefix Origin Validation ("Valid", "Invalid", "NotFound"). Validation state is explicitly out of scope for the community defined in this document and <span class="bcp14">MUST NOT</span> be encoded or inferred from them.<a href="#section-1.2-2.6.1" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+</dl>
+</section>
+</div>
+</section>
+</div>
+<div id="architecture-and-operations">
+<section id="section-2">
+      <h2 id="name-architecture-and-operations">
+<a href="#section-2" class="section-number selfRef">2. </a><a href="#name-architecture-and-operations" class="section-name selfRef">Architecture and Operations</a>
+      </h2>
+<div id="overview">
+<section id="section-2.1">
+        <h3 id="name-overview">
+<a href="#section-2.1" class="section-number selfRef">2.1. </a><a href="#name-overview" class="section-name selfRef">Overview</a>
+        </h3>
+<p id="section-2.1-1">The mechanism defined in this document operates entirely within the BGP control plane and does not alter protocol message formats or path selection procedures.<a href="#section-2.1-1" class="pilcrow">¶</a></p>
+<p id="section-2.1-2">This Security Policy Community uses BGP Large Community <span>[<a href="#RFC8092" class="cite xref">RFC8092</a>]</span>. Its format is "Global-Administrator:Action-ID:Parameter".<a href="#section-2.1-2" class="pilcrow">¶</a></p>
+<p id="section-2.1-3">An Origin AS attaches one Security Policy Community when originating a route. This community is propagated unchanged unless explicitly removed or modified by policy.<a href="#section-2.1-3" class="pilcrow">¶</a></p>
+<p id="section-2.1-4">Intermediate and receiving ASes on the propagation path may choose to:<a href="#section-2.1-4" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-2.1-5.1">
+            <p id="section-2.1-5.1.1">ignore the community;<a href="#section-2.1-5.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-2.1-5.2">
+            <p id="section-2.1-5.2.1">log or monitor their presence;<a href="#section-2.1-5.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-2.1-5.3">
+            <p id="section-2.1-5.3.1">correlate them with local validation results;<a href="#section-2.1-5.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-2.1-5.4">
+            <p id="section-2.1-5.4.1">and incorporate them into local policy decisions.<a href="#section-2.1-5.4.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-2.1-6">No mandatory processing behavior is defined, and no interoperability dependency is introduced.<a href="#section-2.1-6" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="policy-signaling-versus-validation-state">
+<section id="section-2.2">
+        <h3 id="name-policy-signaling-versus-val">
+<a href="#section-2.2" class="section-number selfRef">2.2. </a><a href="#name-policy-signaling-versus-val" class="section-name selfRef">Policy Signaling Versus Validation State</a>
+        </h3>
+<p id="section-2.2-1">This document makes a strict distinction between:<a href="#section-2.2-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-2.2-2.1">
+            <p id="section-2.2-2.1.1">validation state, which is derived locally from cryptographic or registry-based mechanisms; and<a href="#section-2.2-2.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-2.2-2.2">
+            <p id="section-2.2-2.2.1">policy intent, which reflects the Origin AS's operational expectations for its own routes.<a href="#section-2.2-2.2.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-2.2-3">The community defined herein exclusively signal policy intent. They do not encode validation outcomes, confidence levels, or security posture of any AS.<a href="#section-2.2-3" class="pilcrow">¶</a></p>
+<p id="section-2.2-4">Downstream ASes <span class="bcp14">MUST NOT</span> interpret these communities as an indication that validation has been successfully performed, nor as a substitute for local validation.<a href="#section-2.2-4" class="pilcrow">¶</a></p>
+<p id="section-2.2-5">Implementations and operators <span class="bcp14">MUST NOT</span> configure policies that set, clear, or modify the Security Policy Community defined in this document based solely on per-route validation outcomes (for example, if validation is Valid, then attach ROA-Strict). Doing so would effectively re-export validation state in BGP Communities, contrary to the guidance in <span>[<a href="#AVOID-RPKI-STATE-IN-BGP" class="cite xref">AVOID-RPKI-STATE-IN-BGP</a>]</span>. This design explicitly aligns with the guidance in <span>[<a href="#AVOID-RPKI-STATE-IN-BGP" class="cite xref">AVOID-RPKI-STATE-IN-BGP</a>]</span>, and avoids propagating dynamic security state within BGP.<a href="#section-2.2-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="transitivity-considerations">
+<section id="section-2.3">
+        <h3 id="name-transitivity-considerations">
+<a href="#section-2.3" class="section-number selfRef">2.3. </a><a href="#name-transitivity-considerations" class="section-name selfRef">Transitivity Considerations</a>
+        </h3>
+<p id="section-2.3-1">All communities defined in this document are specified as transitive, with the intent that the origin-declared policy intent can be observed by all ASes along the AS-PATH.<a href="#section-2.3-1" class="pilcrow">¶</a></p>
+<p id="section-2.3-2">Intermediate ASes may apply local policy that removes or modifies communities, such behavior is outside the scope of this specification. This specification does not impose any requirement on intermediate ASes to preserve these communities. Preservation is an operational choice intended to maximize the visibility of origin-declared policy intent.<a href="#section-2.3-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="origin-as-behavior">
+<section id="section-2.4">
+        <h3 id="name-origin-as-behavior">
+<a href="#section-2.4" class="section-number selfRef">2.4. </a><a href="#name-origin-as-behavior" class="section-name selfRef">Origin AS Behavior</a>
+        </h3>
+<p id="section-2.4-1">An Origin AS that chooses to signal security policy intent <span class="bcp14">SHOULD</span> attach the appropriate Security Policy Community when originating a route. The communities are intended to reflect a relatively stable per-origin policy posture, not per-route or per-event state.<a href="#section-2.4-1" class="pilcrow">¶</a></p>
+<p id="section-2.4-2">For example, an AS 65001 that wishes to indicate a strict policy posture with respect to ROA-based validation ambiguity for a given prefix may attach the following Large Community:<a href="#section-2.4-2" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-2.4-3.1">
+            <p id="section-2.4-3.1.1"><code>65001:1000:1</code> (ROA-Strict, default strict policy posture)<a href="#section-2.4-3.1.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-2.4-4">An Origin AS <span class="bcp14">MUST NOT</span> attach the Security Policy Communities defined in this document as a function of per-route validation outcomes. Instead, the communities are intended to describe the Origin AS's policy intent independent of the current dynamic validation state of any one route.<a href="#section-2.4-4" class="pilcrow">¶</a></p>
+<p id="section-2.4-5">This mechanism does not require the Origin AS to disclose whether it has deployed RPKI, ROAs, or ROV, and the presence or absence of these communities <span class="bcp14">MUST NOT</span> be interpreted as such disclosure.<a href="#section-2.4-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="intermediate-as-behavior">
+<section id="section-2.5">
+        <h3 id="name-intermediate-as-behavior">
+<a href="#section-2.5" class="section-number selfRef">2.5. </a><a href="#name-intermediate-as-behavior" class="section-name selfRef">Intermediate AS Behavior</a>
+        </h3>
+<p id="section-2.5-1">A receiving AS that chooses to process these communities <span class="bcp14">SHOULD</span>, when using Large Communities, verify that the Global Administrator ASN in the Large Community matches the rightmost (Origin) AS in the AS_PATH. If they do not match, the community <span class="bcp14">MUST</span> be ignored for the purpose of interpreting origin policy intent, in order to limit unauthorized policy signaling.<a href="#section-2.5-1" class="pilcrow">¶</a></p>
+<p id="section-2.5-2">If this plausibility check succeeds, a receiving AS <span class="bcp14">MAY</span> correlate the presence of a ROA-Strict community with its locally derived validation results as part of its local policy framework.<a href="#section-2.5-2" class="pilcrow">¶</a></p>
+<p id="section-2.5-3">For example, a local policy may, if configured by the operator, treat a route carrying a ROA-Strict community as less acceptable when the local RPKI validation state is NotFound. Such behavior is illustrative only and is not mandated by this specification.<a href="#section-2.5-3" class="pilcrow">¶</a></p>
+<p id="section-2.5-4">A receiving AS <span class="bcp14">MUST NOT</span> treat the presence of a ROA-Strict community as evidence that validation has already been performed, or that a particular validation outcome exists.<a href="#section-2.5-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="Parameter-Extensibility">
+<section id="section-2.6">
+        <h3 id="name-parameter-field-extensibili">
+<a href="#section-2.6" class="section-number selfRef">2.6. </a><a href="#name-parameter-field-extensibili" class="section-name selfRef">Parameter Field Extensibility</a>
+        </h3>
+<p id="section-2.6-1">The "Parameter" field in the BGP Security Policy Community is explicitly designed for extensibility. Currently, a value of "1" conveys the default strict policy posture for the associated security action (e.g., ROA-Strict). Future assignments may introduce further parameters to support nuanced policy signaling, such as variant handling levels, time-limited policies, or security requirements specific to more recent routing security enhancements.<a href="#section-2.6-1" class="pilcrow">¶</a></p>
+<p id="section-2.6-2">Example encodings (illustrative only, not assigned in this document):<a href="#section-2.6-2" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-2.6-3.1">
+            <p id="section-2.6-3.1.1"><code>65001:1000:1</code> (ROA-Strict, default strict policy posture)<a href="#section-2.6-3.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-2.6-3.2">
+            <p id="section-2.6-3.2.1"><code>65001:1000:2</code> (hypothetical future refinement of ROA-Strict behavior)<a href="#section-2.6-3.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-2.6-3.3">
+            <p id="section-2.6-3.3.1"><code>65001:1001:1</code> (hypothetical new Action-ID for a future policy, e.g., ASPA-Strict)<a href="#section-2.6-3.3.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-2.6-4">The Action-ID and Parameter range is managed through IANA for orderly growth as the community adopts richer security policies.<a href="#section-2.6-4" class="pilcrow">¶</a></p>
+<p id="section-2.6-5">The extensibility of the Parameter field is intentionally limited to policy refinement and does not introduce conditional logic or dynamic state signaling.<a href="#section-2.6-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="applicability-and-deployment">
+<section id="section-3">
+      <h2 id="name-applicability-and-deploymen">
+<a href="#section-3" class="section-number selfRef">3. </a><a href="#name-applicability-and-deploymen" class="section-name selfRef">Applicability and Deployment</a>
+      </h2>
+<div id="applicability-to-route-leak-and-hijack-detection">
+<section id="section-3.1">
+        <h3 id="name-applicability-to-route-leak">
+<a href="#section-3.1" class="section-number selfRef">3.1. </a><a href="#name-applicability-to-route-leak" class="section-name selfRef">Applicability to Route Leak and Hijack Detection</a>
+        </h3>
+<p id="section-3.1-1">Security policy communities may serve as additional context for routing analysis systems.<a href="#section-3.1-1" class="pilcrow">¶</a></p>
+<p id="section-3.1-2">For example, a route that violates an origin-authorized export constraint, while also exhibiting abnormal AS path patterns, may be flagged as anomalous with higher confidence when it also carries a strict policy community from the expected origin.<a href="#section-3.1-2" class="pilcrow">¶</a></p>
+<p id="section-3.1-3">Such signals can reduce false positives in detection systems by providing operator-declared intent, without asserting correctness. This document does not define detection algorithms or mitigation procedures.<a href="#section-3.1-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="deployment-considerations">
+<section id="section-3.2">
+        <h3 id="name-deployment-considerations">
+<a href="#section-3.2" class="section-number selfRef">3.2. </a><a href="#name-deployment-considerations" class="section-name selfRef">Deployment Considerations</a>
+        </h3>
+<p id="section-3.2-1">The proposed mechanism is compatible with existing routing policies and does not require changes to BGP implementations. Deployment of this mechanism is expected to be incremental and partial.<a href="#section-3.2-1" class="pilcrow">¶</a></p>
+<p id="section-3.2-2">The proposed mechanism is intended for gradual deployment and interoperability with existing BGP technologies. Origin ASes may selectively signal policy intent for specific prefixes. In hybrid networks where both supporting and non-supporting ASes are present, policy communities will simply be ignored by legacy BGP speakers, providing backward compatibility. No coordination between ASes is required.<a href="#section-3.2-2" class="pilcrow">¶</a></p>
+<p id="section-3.2-3">Operators are encouraged to monitor for loss or modification of policy communities due to intermediate ASes that filter or rewrite BGP Community attributes, so as to ensure policy expectations are properly signaled end-to-end.<a href="#section-3.2-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="security-considerations">
+<section id="section-4">
+      <h2 id="name-security-considerations">
+<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
+      </h2>
+<p id="section-4-1">This document defines a policy signaling mechanism using BGP communities. It does not define a security mechanism and does not provide independent security guarantees. It is not intended for real-time attack mitigation or automated incident response.<a href="#section-4-1" class="pilcrow">¶</a></p>
+<p id="section-4-2">This document follows the guidance in <span>[<a href="#AVOID-RPKI-STATE-IN-BGP" class="cite xref">AVOID-RPKI-STATE-IN-BGP</a>]</span> by not carrying any RPKI-derived validation state in BGP. The communities defined here do not encode or imply specific validation outcomes (such as "Valid", "Invalid", or "NotFound"). Instead, they allow an Origin AS to express a relatively stable policy posture regarding how downstream ASes may treat ambiguous validation results for its routes, if they choose to do so.<a href="#section-4-2" class="pilcrow">¶</a></p>
+<div id="authenticity-and-integrity">
+<section id="section-4.1">
+        <h3 id="name-authenticity-and-integrity">
+<a href="#section-4.1" class="section-number selfRef">4.1. </a><a href="#name-authenticity-and-integrity" class="section-name selfRef">Authenticity and Integrity</a>
+        </h3>
+<p id="section-4.1-1">The communities defined in this document are not cryptographically protected and may be modified, removed, or added in transit. This is consistent with existing BGP community usage and with the design goals of this document.<a href="#section-4.1-1" class="pilcrow">¶</a></p>
+<p id="section-4.1-2">No attempt is made to ensure integrity or authenticity of community propagation. Accordingly, these communities <span class="bcp14">MUST NOT</span> be treated as authoritative security assertions and <span class="bcp14">MUST NOT</span> be used as a basis for accepting otherwise invalid routes.<a href="#section-4.1-2" class="pilcrow">¶</a></p>
+<p id="section-4.1-3">The semantics defined herein apply only to communities that are plausibly originated by the Origin AS, as determined, in the case of Large Communities, by the Global Administrator field matching the rightmost AS in the AS_PATH. This check is intended solely to limit semantic impersonation and does not constitute a security guarantee.<a href="#section-4.1-3" class="pilcrow">¶</a></p>
+<p id="section-4.1-4">An adversary capable of hijacking a route may also attach, modify, or remove communities. It is worthing note that the mechanism is fail-closed with respect to adversarial injection of Security Policy Communities. An intermediate AS, or an active attacker on the path, could unilaterally attach a strict Security Policy Community to a route that did not originate it. However, this cannot weaken security posture: at worst, it causes the route to be treated under stricter assumptions (e.g., making certain ambiguous states appear more suspicious to detection systems) than the true origin may have intended. Because the communities do not grant additional reachability or override existing validation results, but only bias analysis and filtering towards more conservative handling, unauthorized addition of such communities can at most increase false positives, not reduce protections.<a href="#section-4.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="relationship-to-validation-mechanisms">
+<section id="section-4.2">
+        <h3 id="name-relationship-to-validation-">
+<a href="#section-4.2" class="section-number selfRef">4.2. </a><a href="#name-relationship-to-validation-" class="section-name selfRef">Relationship to Validation Mechanisms</a>
+        </h3>
+<p id="section-4.2-1">The communities defined in this document do not represent validation results, security states, or assertions of route correctness, legitimacy, or authorization.<a href="#section-4.2-1" class="pilcrow">¶</a></p>
+<p id="section-4.2-2">In particular, the presence or absence of a Security Policy Community <span class="bcp14">MUST NOT</span> be interpreted as indicating whether a route is valid or invalid under RPKI, BGPsec, or any other validation mechanism.<a href="#section-4.2-2" class="pilcrow">¶</a></p>
+<p id="section-4.2-3">These communities <span class="bcp14">MUST NOT</span> override locally derived validation results, including a "Valid" RPKI state. They may be correlated with validation outcomes as part of local policy or analysis, but they do not alter the semantics of those outcomes.<a href="#section-4.2-3" class="pilcrow">¶</a></p>
+<p id="section-4.2-4">Implementations and operators <span class="bcp14">MUST NOT</span> use these communities as a reason to skip or short-circuit local validation.<a href="#section-4.2-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="policy-semantics-and-downstream-behavior">
+<section id="section-4.3">
+        <h3 id="name-policy-semantics-and-downst">
+<a href="#section-4.3" class="section-number selfRef">4.3. </a><a href="#name-policy-semantics-and-downst" class="section-name selfRef">Policy Semantics and Downstream Behavior</a>
+        </h3>
+<p id="section-4.3-1">The communities defined in this document express origin-authorized policy intent only. They do not define required actions.<a href="#section-4.3-1" class="pilcrow">¶</a></p>
+<p id="section-4.3-2">Downstream Autonomous Systems <span class="bcp14">MAY</span> ignore these communities entirely without violating this specification. Any routing, filtering, or preference decisions remain solely a matter of local policy.<a href="#section-4.3-2" class="pilcrow">¶</a></p>
+<p id="section-4.3-3">The absence of a policy community <span class="bcp14">MUST NOT</span> be interpreted as expressing the opposite intent.<a href="#section-4.3-3" class="pilcrow">¶</a></p>
+<p id="section-4.3-4">This document does not require or expect consistent interpretation or uniform behavior across Autonomous Systems. Differences in interpretation, deployment, and operational use are expected and acceptable.<a href="#section-4.3-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="denial-of-service-and-abuse-considerations">
+<section id="section-4.4">
+        <h3 id="name-denial-of-service-and-abuse">
+<a href="#section-4.4" class="section-number selfRef">4.4. </a><a href="#name-denial-of-service-and-abuse" class="section-name selfRef">Denial-of-Service and Abuse Considerations</a>
+        </h3>
+<p id="section-4.4-1">This document intentionally avoids defining communities that directly request route suppression or traffic dropping. As a result, it reduces the risk that a malicious actor could trigger network-wide disruption through abuse of policy signaling.<a href="#section-4.4-1" class="pilcrow">¶</a></p>
+<p id="section-4.4-2">Nevertheless, operators should be aware that misconfiguration or abuse of these communities may influence local policy decisions if such decisions are explicitly configured to consider them. Operators are encouraged to avoid automated hard actions based solely on the presence of these communities, and to combine them with independently derived validation results and operational context.<a href="#section-4.4-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="threat-model">
+<section id="section-4.5">
+        <h3 id="name-threat-model">
+<a href="#section-4.5" class="section-number selfRef">4.5. </a><a href="#name-threat-model" class="section-name selfRef">Threat Model</a>
+        </h3>
+<p id="section-4.5-1">Potential abuse scenarios include, but are not limited to:<a href="#section-4.5-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-4.5-2.1">
+            <p id="section-4.5-2.1.1">false or misleading signaling of policy intent;<a href="#section-4.5-2.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.5-2.2">
+            <p id="section-4.5-2.2.1">removal or modification of policy signals during propagation;<a href="#section-4.5-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.5-2.3">
+            <p id="section-4.5-2.3.1">inconsistent signaling across multiple origin points.<a href="#section-4.5-2.3.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-4.5-3">These risks are inherent to existing uses of BGP communities and do not introduce new attack vectors. Operators <span class="bcp14">SHOULD</span> correlate these signals with independently verifiable information when making security-related decisions.<a href="#section-4.5-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="iana-considerations">
+<section id="section-5">
+      <h2 id="name-iana-considerations">
+<a href="#section-5" class="section-number selfRef">5. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
+      </h2>
+<p id="section-5-1">his document requests the creation of one new sub-registry under the "BGP Large Communities" registry. No other IANA actions are required.<a href="#section-5-1" class="pilcrow">¶</a></p>
+<div id="bgp-security-policy-action-ids">
+<section id="section-5.1">
+        <h3 id="name-bgp-security-policy-action-">
+<a href="#section-5.1" class="section-number selfRef">5.1. </a><a href="#name-bgp-security-policy-action-" class="section-name selfRef">BGP Security Policy Action IDs</a>
+        </h3>
+<p id="section-5.1-1">This document defines new BGP Large Community values for signaling security policy intent. Large Communities are used, rather than Extended Communities, to avoid ASN exhaustion and ambiguity associated with 16-bit Global Administrator fields.<a href="#section-5.1-1" class="pilcrow">¶</a></p>
+<p id="section-5.1-2">IANA is requested to create a sub-registry titled "BGP Security Policy Action IDs" under the "BGP Large Communities" registry.<a href="#section-5.1-2" class="pilcrow">¶</a></p>
+<p id="section-5.1-3">Large Communities used for this purpose have the following format:<a href="#section-5.1-3" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-5.1-4">
+<pre>
+     Global-Administrator:Action-ID:Parameter
+</pre><a href="#section-5.1-4" class="pilcrow">¶</a>
+</div>
+<p id="section-5.1-5">The Global-Administrator field <span class="bcp14">MUST</span> be set to the ASN of the Origin AS. The Action-ID field is an integer whose semantics are defined in the "BGP Security Policy Action IDs" sub-registry created by this document. The Parameter field is left to future documents or operator-specific conventions.<a href="#section-5.1-5" class="pilcrow">¶</a></p>
+<p id="section-5.1-6">The Action-ID space is globally coordinated by IANA so that the same Action-ID has the same semantics regardless of the Origin AS using it. The "Strict" qualifier expresses only an origin-declared preference and does not define any required downstream behavior.<a href="#section-5.1-6" class="pilcrow">¶</a></p>
+<p id="section-5.1-7">The initial contents of the "BGP Security Policy Action IDs" sub-registry are:<a href="#section-5.1-7" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-5.1-8">
+<pre>
+  Action ID | Name        | Policy Intent Description
+  ------------------------------------------------------------------
+  1000      | ROA-Strict  | Origin expresses a preference for strict
+            |             | handling of its originated routes when
+            |             | downstream RPKI validation results are
+            |             | ambiguous or unfavorable (e.g., NotFound
+            |             | or Invalid).
+</pre><a href="#section-5.1-8" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+</section>
+</div>
+<div id="relationship-to-existing-and-future-mechanisms">
+<section id="section-6">
+      <h2 id="name-relationship-to-existing-an">
+<a href="#section-6" class="section-number selfRef">6. </a><a href="#name-relationship-to-existing-an" class="section-name selfRef">Relationship to Existing and Future Mechanisms</a>
+      </h2>
+<p id="section-6-1">This section clarifies the relationship between the mechanism defined in this document and existing routing policy, traffic engineering, and routing security mechanisms. The goal is to explicitly delineate scope and avoid overlap or semantic ambiguity.<a href="#section-6-1" class="pilcrow">¶</a></p>
+<div id="relationship-to-rpki-and-roa">
+<section id="section-6.1">
+        <h3 id="name-relationship-to-rpki-and-ro">
+<a href="#section-6.1" class="section-number selfRef">6.1. </a><a href="#name-relationship-to-rpki-and-ro" class="section-name selfRef">Relationship to RPKI and ROA</a>
+        </h3>
+<p id="section-6.1-1">RPKI-based mechanisms such as ROA provide cryptographic or registry-backed validation outcomes for routing information. These mechanisms answer the question of whether a route is consistent with registered authorization data.<a href="#section-6.1-1" class="pilcrow">¶</a></p>
+<p id="section-6.1-2">The communities defined in this document do not provide validation and do not alter validation outcomes. They do not indicate that a route is valid, invalid, or authorized. Instead, they allow an Origin AS to express its operational expectations regarding how ambiguous or unfavorable validation outcomes (e.g., NotFound) <em>for its routes</em> may be handled by downstream ASes.<a href="#section-6.1-2" class="pilcrow">¶</a></p>
+<p id="section-6.1-3">This mechanism is therefore complementary to RPKI and related validation mechanisms. It operates strictly at the policy signaling layer and does not export validation state, consistent with the guidance in <span>[<a href="#AVOID-RPKI-STATE-IN-BGP" class="cite xref">AVOID-RPKI-STATE-IN-BGP</a>]</span>.<a href="#section-6.1-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="relationship-to-avoid-rpki-state-in-bgp">
+<section id="section-6.2">
+        <h3 id="name-relationship-to-avoid-rpki-">
+<a href="#section-6.2" class="section-number selfRef">6.2. </a><a href="#name-relationship-to-avoid-rpki-" class="section-name selfRef">Relationship to "Avoid RPKI State in BGP"</a>
+        </h3>
+<p id="section-6.2-1"><span>[<a href="#AVOID-RPKI-STATE-IN-BGP" class="cite xref">AVOID-RPKI-STATE-IN-BGP</a>]</span> provides guidance against carrying RPKI-derived validation state in BGP, particularly via transitive attributes such as BGP communities, because doing so can leak local validation outcomes and policy decisions into the global routing system.<a href="#section-6.2-1" class="pilcrow">¶</a></p>
+<p id="section-6.2-2">The mechanism described in this document has been explicitly designed to conform to that guidance:<a href="#section-6.2-2" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-6.2-3.1">
+            <p id="section-6.2-3.1.1">It does not encode, infer, or transport validation states (e.g., "Valid", "Invalid", "NotFound") in BGP attributes;<a href="#section-6.2-3.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-6.2-3.2">
+            <p id="section-6.2-3.2.1">it does not attempt to synchronize or standardize local validation policies across ASes; and<a href="#section-6.2-3.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-6.2-3.3">
+            <p id="section-6.2-3.3.1">it uses communities only to carry origin-declared policy intent for the treatment of the origin's own routes.<a href="#section-6.2-3.3.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-6.2-4">As a result, downstream ASes remain responsible for performing their own validation and applying their own policies. The communities defined here are optional hints that can help align local policy decisions with the origin's expressed expectations, without exporting dynamic validation state in BGP.<a href="#section-6.2-4" class="pilcrow">¶</a></p>
+<p id="section-6.2-5">The work in <span>[<a href="#AVOID-RPKI-STATE-IN-BGP" class="cite xref">AVOID-RPKI-STATE-IN-BGP</a>]</span> argues that RPKI validation state (e.g., "Valid", "Invalid", "NotFound") and related information <span class="bcp14">SHOULD NOT</span> be propagated in BGP, in order to avoid leaking local validation outcomes and policy decisions into the global routing system.<a href="#section-6.2-5" class="pilcrow">¶</a></p>
+<p id="section-6.2-6">This document is aligned with that principle:<a href="#section-6.2-6" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-6.2-7.1">
+            <p id="section-6.2-7.1.1">The communities defined here do not carry or reflect any RPKI validation state; and<a href="#section-6.2-7.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-6.2-7.2">
+            <p id="section-6.2-7.2.1">they do not reveal whether RPKI/ROV is deployed by the Origin AS or by any downstream AS.<a href="#section-6.2-7.2.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-6.2-8">Instead, this document only defines a way for the Origin AS to signal a policy intent to downstream ASes: "please apply stricter ROA-based validation policy to my originated routes, if you support such a policy." Whether and how a downstream AS uses this hint in its local policy is entirely at its own discretion.<a href="#section-6.2-8" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="relationship-to-bgpsec">
+<section id="section-6.3">
+        <h3 id="name-relationship-to-bgpsec">
+<a href="#section-6.3" class="section-number selfRef">6.3. </a><a href="#name-relationship-to-bgpsec" class="section-name selfRef">Relationship to BGPsec</a>
+        </h3>
+<p id="section-6.3-1">BGPsec <span>[<a href="#RFC8205" class="cite xref">RFC8205</a>]</span> provides cryptographic protection of the AS_PATH to ensure path integrity and origin authentication. BGPsec is designed to assert and verify routing correctness.<a href="#section-6.3-1" class="pilcrow">¶</a></p>
+<p id="section-6.3-2">The mechanism defined in this document does not provide cryptographic protection, path validation, or origin authentication. It does not attempt to replace or replicate BGPsec functionality. Instead, it provides an optional policy signal that may be used in conjunction with BGPsec or in environments where BGPsec is not deployed.<a href="#section-6.3-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="relationship-to-bgp-color-and-color-aware-routing">
+<section id="section-6.4">
+        <h3 id="name-relationship-to-bgp-color-a">
+<a href="#section-6.4" class="section-number selfRef">6.4. </a><a href="#name-relationship-to-bgp-color-a" class="section-name selfRef">Relationship to BGP Color and Color-Aware Routing</a>
+        </h3>
+<p id="section-6.4-1">BGP Color and Color-Aware Routing mechanisms <span>[<a href="#RFC9871" class="cite xref">RFC9871</a>]</span> are primarily intended to support traffic engineering and transport-specific constraints, such as latency, bandwidth, or SR policy selection.<a href="#section-6.4-1" class="pilcrow">¶</a></p>
+<p id="section-6.4-2">While both mechanisms use BGP communities as signaling vehicles, the semantics are fundamentally different. BGP Color expresses forwarding or transport preferences, whereas the communities defined in this document express origin-declared routing security policy intent.<a href="#section-6.4-2" class="pilcrow">¶</a></p>
+<p id="section-6.4-3">This document does not define path selection behavior, traffic steering, or forwarding constraints, and does not overlap with the objectives of Color-Aware Routing.<a href="#section-6.4-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="relationship-to-only-to-customer-otc">
+<section id="section-6.5">
+        <h3 id="name-relationship-to-only-to-cus">
+<a href="#section-6.5" class="section-number selfRef">6.5. </a><a href="#name-relationship-to-only-to-cus" class="section-name selfRef">Relationship to Only-To-Customer (OTC)</a>
+        </h3>
+<p id="section-6.5-1">OTC <span>[<a href="#RFC9234" class="cite xref">RFC9234</a>]</span> is a mechanism designed to assist in route leak prevention by signaling export intent at AS boundaries.<a href="#section-6.5-1" class="pilcrow">¶</a></p>
+<p id="section-6.5-2">The communities defined in this document differ from OTC in scope and semantics. OTC signals propagation constraints related to business relationships, whereas this document signals security policy expectations related to validation ambiguity for an origin's routes.<a href="#section-6.5-2" class="pilcrow">¶</a></p>
+<p id="section-6.5-3">These mechanisms are complementary and may coexist on the same routes. Neither mechanism subsumes the other.<a href="#section-6.5-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="relationship-to-potential-aspa-based-extensions">
+<section id="section-6.6">
+        <h3 id="name-relationship-to-potential-a">
+<a href="#section-6.6" class="section-number selfRef">6.6. </a><a href="#name-relationship-to-potential-a" class="section-name selfRef">Relationship to Potential ASPA-Based Extensions</a>
+        </h3>
+<p id="section-6.6-1">This document focuses exclusively on ROA-based origin validation and the associated ROA-Strict intent community. Other validation mechanisms such as ASPA <span>[<a href="#ASPA-Profile" class="cite xref">ASPA-Profile</a>]</span> <span>[<a href="#ASPA-Verification" class="cite xref">ASPA-Verification</a>]</span> may, in the future, benefit from similar origin-intent signaling constructs.<a href="#section-6.6-1" class="pilcrow">¶</a></p>
+<p id="section-6.6-2">Any such ASPA-related communities, if defined, <span class="bcp14">MUST</span> follow the same core principles as this document:<a href="#section-6.6-2" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-6.6-3.1">
+            <p id="section-6.6-3.1.1">they <span class="bcp14">MUST NOT</span> export ASPA-derived validation state in BGP;<a href="#section-6.6-3.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-6.6-3.2">
+            <p id="section-6.6-3.2.1">they <span class="bcp14">MUST</span> signal only relatively stable origin policy intent;<a href="#section-6.6-3.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-6.6-3.3">
+            <p id="section-6.6-3.3.1">and they <span class="bcp14">MUST</span> leave all enforcement decisions to downstream local policy.<a href="#section-6.6-3.3.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-6.6-4">The specification of ASPA-based policy communities, including any additional Action IDs, is out of scope for this document and is expected to be covered in separate documents if there is interest.<a href="#section-6.6-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="sec-combined-references">
+<section id="section-7">
+      <h2 id="name-references">
+<a href="#section-7" class="section-number selfRef">7. </a><a href="#name-references" class="section-name selfRef">References</a>
+      </h2>
+<div id="sec-normative-references">
+<section id="section-7.1">
+        <h3 id="name-normative-references">
+<a href="#section-7.1" class="section-number selfRef">7.1. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
+        </h3>
+<dl class="references">
+<dt id="RFC2119">[RFC2119]</dt>
+        <dd>
+<span class="refAuthor">Bradner, S.</span>, <span class="refTitle">"Key words for use in RFCs to Indicate Requirement Levels"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 2119</span>, <span class="seriesInfo">DOI 10.17487/RFC2119</span>, <time datetime="1997-03" class="refDate">March 1997</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc2119">https://www.rfc-editor.org/rfc/rfc2119</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC4271">[RFC4271]</dt>
+        <dd>
+<span class="refAuthor">Rekhter, Y., Ed.</span>, <span class="refAuthor">Li, T., Ed.</span>, and <span class="refAuthor">S. Hares, Ed.</span>, <span class="refTitle">"A Border Gateway Protocol 4 (BGP-4)"</span>, <span class="seriesInfo">RFC 4271</span>, <span class="seriesInfo">DOI 10.17487/RFC4271</span>, <time datetime="2006-01" class="refDate">January 2006</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc4271">https://www.rfc-editor.org/rfc/rfc4271</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8092">[RFC8092]</dt>
+        <dd>
+<span class="refAuthor">Heitz, J., Ed.</span>, <span class="refAuthor">Snijders, J., Ed.</span>, <span class="refAuthor">Patel, K.</span>, <span class="refAuthor">Bagdonas, I.</span>, and <span class="refAuthor">N. Hilliard</span>, <span class="refTitle">"BGP Large Communities Attribute"</span>, <span class="seriesInfo">RFC 8092</span>, <span class="seriesInfo">DOI 10.17487/RFC8092</span>, <time datetime="2017-02" class="refDate">February 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8092">https://www.rfc-editor.org/rfc/rfc8092</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8174">[RFC8174]</dt>
+      <dd>
+<span class="refAuthor">Leiba, B.</span>, <span class="refTitle">"Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 8174</span>, <span class="seriesInfo">DOI 10.17487/RFC8174</span>, <time datetime="2017-05" class="refDate">May 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8174">https://www.rfc-editor.org/rfc/rfc8174</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+</dl>
+</section>
+</div>
+<div id="sec-informative-references">
+<section id="section-7.2">
+        <h3 id="name-informative-references">
+<a href="#section-7.2" class="section-number selfRef">7.2. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
+        </h3>
+<dl class="references">
+<dt id="ASPA-Profile">[ASPA-Profile]</dt>
+        <dd>
+<span class="refAuthor">Azimov, A.</span>, <span class="refAuthor">Uskov, E.</span>, <span class="refAuthor">Bush, R.</span>, <span class="refAuthor">Snijders, J.</span>, <span class="refAuthor">Housley, R.</span>, and <span class="refAuthor">B. Maddison</span>, <span class="refTitle">"A Profile for Autonomous System Provider Authorization"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-sidrops-aspa-profile-22</span>, <time datetime="2026-02-06" class="refDate">6 February 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-sidrops-aspa-profile-22">https://datatracker.ietf.org/doc/html/draft-ietf-sidrops-aspa-profile-22</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="ASPA-Verification">[ASPA-Verification]</dt>
+        <dd>
+<span class="refAuthor">Azimov, A.</span>, <span class="refAuthor">Bogomazov, E.</span>, <span class="refAuthor">Bush, R.</span>, <span class="refAuthor">Patel, K.</span>, <span class="refAuthor">Snijders, J.</span>, and <span class="refAuthor">K. Sriram</span>, <span class="refTitle">"BGP AS_PATH Verification Based on Autonomous System Provider Authorization (ASPA) Objects"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-sidrops-aspa-verification-24</span>, <time datetime="2025-10-19" class="refDate">19 October 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-sidrops-aspa-verification-24">https://datatracker.ietf.org/doc/html/draft-ietf-sidrops-aspa-verification-24</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="AVOID-RPKI-STATE-IN-BGP">[AVOID-RPKI-STATE-IN-BGP]</dt>
+        <dd>
+<span class="refAuthor">Snijders, J.</span>, <span class="refAuthor">Fiebig, T.</span>, and <span class="refAuthor">M. Stucchi</span>, <span class="refTitle">"Guidance to Avoid Carrying RPKI Validation States in Transitive BGP Path Attributes"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-sidrops-avoid-rpki-state-in-bgp-04</span>, <time datetime="2026-02-12" class="refDate">12 February 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-sidrops-avoid-rpki-state-in-bgp-04">https://datatracker.ietf.org/doc/html/draft-ietf-sidrops-avoid-rpki-state-in-bgp-04</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC6480">[RFC6480]</dt>
+        <dd>
+<span class="refAuthor">Lepinski, M.</span> and <span class="refAuthor">S. Kent</span>, <span class="refTitle">"An Infrastructure to Support Secure Internet Routing"</span>, <span class="seriesInfo">RFC 6480</span>, <span class="seriesInfo">DOI 10.17487/RFC6480</span>, <time datetime="2012-02" class="refDate">February 2012</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc6480">https://www.rfc-editor.org/rfc/rfc6480</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC6482">[RFC6482]</dt>
+        <dd>
+<span class="refAuthor">Lepinski, M.</span>, <span class="refAuthor">Kent, S.</span>, and <span class="refAuthor">D. Kong</span>, <span class="refTitle">"A Profile for Route Origin Authorizations (ROAs)"</span>, <span class="seriesInfo">RFC 6482</span>, <span class="seriesInfo">DOI 10.17487/RFC6482</span>, <time datetime="2012-02" class="refDate">February 2012</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc6482">https://www.rfc-editor.org/rfc/rfc6482</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC6811">[RFC6811]</dt>
+        <dd>
+<span class="refAuthor">Mohapatra, P.</span>, <span class="refAuthor">Scudder, J.</span>, <span class="refAuthor">Ward, D.</span>, <span class="refAuthor">Bush, R.</span>, and <span class="refAuthor">R. Austein</span>, <span class="refTitle">"BGP Prefix Origin Validation"</span>, <span class="seriesInfo">RFC 6811</span>, <span class="seriesInfo">DOI 10.17487/RFC6811</span>, <time datetime="2013-01" class="refDate">January 2013</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc6811">https://www.rfc-editor.org/rfc/rfc6811</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC7999">[RFC7999]</dt>
+        <dd>
+<span class="refAuthor">King, T.</span>, <span class="refAuthor">Dietzel, C.</span>, <span class="refAuthor">Snijders, J.</span>, <span class="refAuthor">Doering, G.</span>, and <span class="refAuthor">G. Hankins</span>, <span class="refTitle">"BLACKHOLE Community"</span>, <span class="seriesInfo">RFC 7999</span>, <span class="seriesInfo">DOI 10.17487/RFC7999</span>, <time datetime="2016-10" class="refDate">October 2016</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc7999">https://www.rfc-editor.org/rfc/rfc7999</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8097">[RFC8097]</dt>
+        <dd>
+<span class="refAuthor">Mohapatra, P.</span>, <span class="refAuthor">Patel, K.</span>, <span class="refAuthor">Scudder, J.</span>, <span class="refAuthor">Ward, D.</span>, and <span class="refAuthor">R. Bush</span>, <span class="refTitle">"BGP Prefix Origin Validation State Extended Community"</span>, <span class="seriesInfo">RFC 8097</span>, <span class="seriesInfo">DOI 10.17487/RFC8097</span>, <time datetime="2017-03" class="refDate">March 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8097">https://www.rfc-editor.org/rfc/rfc8097</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8205">[RFC8205]</dt>
+        <dd>
+<span class="refAuthor">Lepinski, M., Ed.</span> and <span class="refAuthor">K. Sriram, Ed.</span>, <span class="refTitle">"BGPsec Protocol Specification"</span>, <span class="seriesInfo">RFC 8205</span>, <span class="seriesInfo">DOI 10.17487/RFC8205</span>, <time datetime="2017-09" class="refDate">September 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8205">https://www.rfc-editor.org/rfc/rfc8205</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC9234">[RFC9234]</dt>
+        <dd>
+<span class="refAuthor">Azimov, A.</span>, <span class="refAuthor">Bogomazov, E.</span>, <span class="refAuthor">Bush, R.</span>, <span class="refAuthor">Patel, K.</span>, and <span class="refAuthor">K. Sriram</span>, <span class="refTitle">"Route Leak Prevention and Detection Using Roles in UPDATE and OPEN Messages"</span>, <span class="seriesInfo">RFC 9234</span>, <span class="seriesInfo">DOI 10.17487/RFC9234</span>, <time datetime="2022-05" class="refDate">May 2022</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9234">https://www.rfc-editor.org/rfc/rfc9234</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC9582">[RFC9582]</dt>
+        <dd>
+<span class="refAuthor">Snijders, J.</span>, <span class="refAuthor">Maddison, B.</span>, <span class="refAuthor">Lepinski, M.</span>, <span class="refAuthor">Kong, D.</span>, and <span class="refAuthor">S. Kent</span>, <span class="refTitle">"A Profile for Route Origin Authorizations (ROAs)"</span>, <span class="seriesInfo">RFC 9582</span>, <span class="seriesInfo">DOI 10.17487/RFC9582</span>, <time datetime="2024-05" class="refDate">May 2024</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9582">https://www.rfc-editor.org/rfc/rfc9582</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC9871">[RFC9871]</dt>
+      <dd>
+<span class="refAuthor">Rao, D., Ed.</span> and <span class="refAuthor">S. Agrawal, Ed.</span>, <span class="refTitle">"BGP Color-Aware Routing (CAR)"</span>, <span class="seriesInfo">RFC 9871</span>, <span class="seriesInfo">DOI 10.17487/RFC9871</span>, <time datetime="2025-11" class="refDate">November 2025</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9871">https://www.rfc-editor.org/rfc/rfc9871</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+</dl>
+</section>
+</div>
+</section>
+</div>
+<div id="acknowledgments">
+<section id="appendix-A">
+      <h2 id="name-acknowledgments">
+<a href="#name-acknowledgments" class="section-name selfRef">Acknowledgments</a>
+      </h2>
+<p id="appendix-A-1">TBD.<a href="#appendix-A-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="authors-addresses">
+<section id="appendix-B">
+      <h2 id="name-authors-addresses">
+<a href="#name-authors-addresses" class="section-name selfRef">Authors' Addresses</a>
+      </h2>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Yangfei Guo</span></div>
+<div dir="auto" class="left"><span class="org">Zhongguancun Laboratory</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:guoyangfei@zgclab.edu.cn" class="email">guoyangfei@zgclab.edu.cn</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Ke Xu</span></div>
+<div dir="auto" class="left"><span class="org">Tsinghua University</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:xuke@tsinghua.edu.cn" class="email">xuke@tsinghua.edu.cn</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Xiaoliang Wang</span></div>
+<div dir="auto" class="left"><span class="org">Capital Normal University</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:wangxiaoliang0623@foxmail.com" class="email">wangxiaoliang0623@foxmail.com</a>
+</div>
+</address>
+</section>
+</div>
+<script>const toc = document.getElementById("toc");
+toc.querySelector("h2").addEventListener("click", e => {
+  toc.classList.toggle("active");
+});
+toc.querySelector("nav").addEventListener("click", e => {
+  toc.classList.remove("active");
+});
+</script>
+</body>
+</html>
