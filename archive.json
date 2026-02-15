@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-02-12T02:06:17.095509+00:00",
+  "timestamp": "2026-02-15T02:08:28.818609+00:00",
   "repo": "FCBGP/bgp-security-community",
   "labels": [
     {
@@ -103,6 +103,34 @@
       "mergedBy": "BasilGuo",
       "mergeCommit": {
         "oid": "c47be6903c0d4b6f460c3e21653d84471bbada57"
+      },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 3,
+      "id": "PR_kwDORJ6vis7DKQlV",
+      "title": "Update Version 00",
+      "url": "https://github.com/FCBGP/bgp-security-community/pull/3",
+      "state": "MERGED",
+      "author": "BasilGuo",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Table Format and Term Format",
+      "createdAt": "2026-02-12T02:31:13Z",
+      "updatedAt": "2026-02-12T02:33:05Z",
+      "baseRepository": "FCBGP/bgp-security-community",
+      "baseRefName": "main",
+      "baseRefOid": "c47be6903c0d4b6f460c3e21653d84471bbada57",
+      "headRepository": "FCBGP/bgp-security-community",
+      "headRefName": "version-00",
+      "headRefOid": "62d128995ddcc899684da916f884f52619792b16",
+      "closedAt": "2026-02-12T02:33:05Z",
+      "mergedAt": "2026-02-12T02:33:05Z",
+      "mergedBy": "BasilGuo",
+      "mergeCommit": {
+        "oid": "3dbf8ad90c55cd81512c57734b4fd5ef715e0f8d"
       },
       "comments": [],
       "reviews": []
